@@ -8,13 +8,28 @@ import { getPatientProfile, PatientProfile } from "@/lib/patientCatalog";
 
 export default function PatientTimelineClient({ initialId }: { initialId?: string }) {
   const params = useParams();
-  const patientId = (params?.id as string) || initialId || "PT-70194";
 
-  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(patientId));
+  const getResolvedId = (): string => {
+    if (params?.id) return params.id as string;
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get("id") || urlParams.get("patientId");
+      if (q) return q;
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const last = parts[parts.length - 1];
+      if (last && last !== "view" && last !== "patients") return last;
+    }
+    return initialId || "PT-70194";
+  };
+
+  const [patientId, setPatientId] = useState<string>(getResolvedId);
+  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(getResolvedId()));
 
   useEffect(() => {
-    setProfile(getPatientProfile(patientId));
-  }, [patientId]);
+    const currentId = getResolvedId();
+    setPatientId(currentId);
+    setProfile(getPatientProfile(currentId));
+  }, [params?.id]);
 
   const timeline = profile.timeline;
 
@@ -54,7 +69,7 @@ export default function PatientTimelineClient({ initialId }: { initialId?: strin
             <span>AI Insights</span>
           </Link>
           <Link
-            href={`/studies/${profile.id}`}
+            href={`/studies/view?id=${profile.id}`}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition shadow-sm"
           >
             <span>View Latest Scan</span>
@@ -158,7 +173,7 @@ export default function PatientTimelineClient({ initialId }: { initialId?: strin
                 <td className="py-3 px-4 font-mono text-slate-900 font-bold">{s.wt_ml} mL</td>
                 <td className="py-3 px-4 text-right">
                   <Link
-                    href={`/studies/${s.study_id}`}
+                    href={`/studies/view?id=${s.study_id}`}
                     className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-700 font-medium text-xs border border-purple-200 transition"
                   >
                     <span>Open Scan</span>

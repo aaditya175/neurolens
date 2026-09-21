@@ -114,7 +114,7 @@ export default function UploadStudyPage() {
       setProgress(100);
       setTimeout(() => {
         setUploading(false);
-        router.push(`/studies/${profile.id}`);
+        router.push(`/studies/view?id=${encodeURIComponent(profile.id)}`);
       }, 500);
     }, 1400);
   };

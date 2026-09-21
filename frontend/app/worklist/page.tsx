@@ -348,7 +348,7 @@ export default function WorklistPage() {
                           <span>AI Insights</span>
                         </Link>
                         <Link
-                          href={`/studies/${item.study_id}`}
+                          href={`/studies/view?id=${item.study_id}`}
                           className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition text-xs shadow-xs"
                           title="Open 3D Viewer and diagnosis workspace"
                         >

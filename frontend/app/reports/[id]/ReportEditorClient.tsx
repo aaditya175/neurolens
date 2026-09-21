@@ -9,17 +9,32 @@ import { API_BASE } from "@/lib/api";
 
 export default function ReportEditorClient({ initialId }: { initialId?: string }) {
   const params = useParams();
-  const reportId = (params?.id as string) || initialId || "856c7e19-a1ae-4298-94f5-d4ad0bdc6072";
 
-  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(reportId));
+  const getResolvedId = (): string => {
+    if (params?.id) return params.id as string;
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get("id") || urlParams.get("reportId") || urlParams.get("studyId");
+      if (q) return q;
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const last = parts[parts.length - 1];
+      if (last && last !== "view" && last !== "reports") return last;
+    }
+    return initialId || "856c7e19-a1ae-4298-94f5-d4ad0bdc6072";
+  };
+
+  const [reportId, setReportId] = useState<string>(getResolvedId);
+  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(getResolvedId()));
   const [status, setStatus] = useState<"draft" | "reviewed" | "signed">("draft");
-  const [impression, setImpression] = useState<string>(() => getPatientProfile(reportId).clinicalImpression);
+  const [impression, setImpression] = useState<string>(() => getPatientProfile(getResolvedId()).clinicalImpression);
 
   useEffect(() => {
-    const loaded = getPatientProfile(reportId);
+    const currentId = getResolvedId();
+    setReportId(currentId);
+    const loaded = getPatientProfile(currentId);
     setProfile(loaded);
     setImpression(loaded.clinicalImpression);
-  }, [reportId]);
+  }, [params?.id]);
 
   const wt = profile.analysis.segmentation.regions.WT.volume_ml;
   const tc = profile.analysis.segmentation.regions.TC.volume_ml;
@@ -32,7 +47,7 @@ export default function ReportEditorClient({ initialId }: { initialId?: string }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href={`/studies/${reportId}`}
+            href={`/studies/view?id=${reportId}`}
             className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />

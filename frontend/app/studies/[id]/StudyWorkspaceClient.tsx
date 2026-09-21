@@ -28,11 +28,25 @@ import { getPatientProfile, PatientProfile } from "@/lib/patientCatalog";
 export default function StudyWorkspaceClient({ initialId }: { initialId?: string }) {
   const params = useParams();
   const router = useRouter();
-  const studyId = (params?.id as string) || initialId || "856c7e19-a1ae-4298-94f5-d4ad0bdc6072";
+
+  const getResolvedId = (): string => {
+    if (params?.id) return params.id as string;
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get("id") || urlParams.get("studyId");
+      if (q) return q;
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const last = parts[parts.length - 1];
+      if (last && last !== "view" && last !== "studies") return last;
+    }
+    return initialId || "856c7e19-a1ae-4298-94f5-d4ad0bdc6072";
+  };
+
+  const [studyId, setStudyId] = useState<string>(getResolvedId);
 
   // State
-  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(studyId));
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(() => getPatientProfile(studyId).analysis);
+  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(getResolvedId()));
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(() => getPatientProfile(getResolvedId()).analysis);
   const [loading, setLoading] = useState<boolean>(false);
 
   // Viewer State
@@ -55,12 +69,14 @@ export default function StudyWorkspaceClient({ initialId }: { initialId?: string
 
   // Load Analysis Data
   useEffect(() => {
+    const currentId = getResolvedId();
+    setStudyId(currentId);
     async function loadData() {
       try {
-        const resolved = getPatientProfile(studyId);
+        const resolved = getPatientProfile(currentId);
         setProfile(resolved);
         try {
-          const data = await fetchStudyAnalysis(studyId);
+          const data = await fetchStudyAnalysis(currentId);
           setAnalysis(data);
         } catch {
           // Fallback to patient profile's exact clinical analysis
@@ -68,14 +84,14 @@ export default function StudyWorkspaceClient({ initialId }: { initialId?: string
         }
       } catch (err: any) {
         // Fallback
-        const fallback = getPatientProfile(studyId);
+        const fallback = getPatientProfile(currentId);
         setProfile(fallback);
         setAnalysis(fallback.analysis);
       }
     }
 
     loadData();
-  }, [studyId]);
+  }, [params?.id]);
 
   const toggleRegion = (region: string) => {
     setActiveRegions((prev) => ({ ...prev, [region]: !prev[region] }));
@@ -124,14 +140,14 @@ export default function StudyWorkspaceClient({ initialId }: { initialId?: string
             <span>Guide to Terms</span>
           </Link>
           <Link
-            href={`/studies/${studyId}/compare`}
+            href={`/studies/compare?id=${studyId}`}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium transition"
           >
             <GitCompare className="w-3.5 h-3.5 text-purple-600" />
             <span>Compare with Past Scans</span>
           </Link>
           <Link
-            href={`/reports/${studyId}`}
+            href={`/reports/view?id=${studyId}`}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition shadow-sm"
           >
             <FileText className="w-3.5 h-3.5" />

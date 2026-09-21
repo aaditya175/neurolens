@@ -8,13 +8,28 @@ import { getPatientProfile, PatientProfile } from "@/lib/patientCatalog";
 
 export default function CompareStudyClient({ initialId }: { initialId?: string }) {
   const params = useParams();
-  const studyId = (params?.id as string) || initialId || "856c7e19-a1ae-4298-94f5-d4ad0bdc6072";
 
-  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(studyId));
+  const getResolvedId = (): string => {
+    if (params?.id) return params.id as string;
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get("id") || urlParams.get("studyId");
+      if (q) return q;
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const last = parts[parts.length - 1];
+      if (last && last !== "compare" && last !== "studies") return last;
+    }
+    return initialId || "856c7e19-a1ae-4298-94f5-d4ad0bdc6072";
+  };
+
+  const [studyId, setStudyId] = useState<string>(getResolvedId);
+  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(getResolvedId()));
 
   useEffect(() => {
-    setProfile(getPatientProfile(studyId));
-  }, [studyId]);
+    const currentId = getResolvedId();
+    setStudyId(currentId);
+    setProfile(getPatientProfile(currentId));
+  }, [params?.id]);
 
   const long = profile.longitudinal;
   const wtDelta = long.latestWT - long.earlierWT;
@@ -34,7 +49,7 @@ export default function CompareStudyClient({ initialId }: { initialId?: string }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href={`/studies/${studyId}`}
+            href={`/studies/view?id=${studyId}`}
             className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
