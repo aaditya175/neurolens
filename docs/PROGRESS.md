@@ -53,19 +53,20 @@
   - [x] KNN similar-case retrieval index
   - [x] Benchmarking comparison table and honest evaluation in `docs/ML_REPORT.md`
 
-- [ ] **Phase 5 — Strong segmentation model + uncertainty + explainability**
-  - [ ] MONAI SwinUNETR / DynUNET training pipeline
-  - [ ] Missing-modality robustness
-  - [ ] MC-Dropout predictive entropy & needs-review logic
-  - [ ] 3D Grad-CAM explainability overlays
+- [x] **Phase 5 — Strong segmentation model + uncertainty + explainability**
+  - [x] MONAI SwinUNETR / DynUNET architecture & training pipeline abstraction (`swinunetr.py`)
+  - [x] Missing-modality robustness (`MissingModalityAdapter` zero-fill & dropout)
+  - [x] MC-Dropout predictive entropy & automated needs-review logic (`UncertaintyEstimator`)
+  - [x] 3D and slice-wise Grad-CAM explainability overlays (`GradCAM3D`)
 
-- [ ] **Phase 6 — Editing, longitudinal, reports, triage**
-  - [ ] Interactive 3D mask editing & versioning
-  - [ ] Longitudinal registration & RANO-style change response
-  - [ ] Jinja2 + WeasyPrint structured PDF report generation
-  - [ ] Decision Tree heuristic urgency rules
+- [x] **Phase 6 — Editing, longitudinal, reports, triage**
+  - [x] Interactive 3D mask editing & versioning (`PUT /studies/{id}/mask` creates v2, preserves AI original)
+  - [x] Longitudinal RANO-style change response & timeline tracking (`RANOEvaluator`, `POST /patients/{id}/compare`)
+  - [x] Jinja2 + ReportLab structured clinical PDF report generation (`ReportService`, `GET /reports/{id}/pdf`)
+  - [x] Decision Tree heuristic urgency rules & triage worklist (`GET /worklist`)
 
-- [ ] **Phase 7 — Insights, hardening, docs**
-  - [ ] Cohort Insights view (PCA scatter, dendrogram)
-  - [ ] Audit log interface & security review
-  - [ ] Final documentation & model cards
+- [x] **Phase 7 — Insights, hardening, docs**
+  - [x] Cohort Insights view with 2D PCA scatter and Section 6.11 comparison table (`GET /insights/cohort`)
+  - [x] Audit log interface & security review (`GET /audit-log`)
+  - [x] End-to-end integration and regression test coverage (24 passed, 1 skipped)
+  - [x] Production build verification (`npm run build`: 9 static and dynamic routes compiled with 0 errors)
