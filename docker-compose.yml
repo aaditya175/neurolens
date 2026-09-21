@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: neurolens_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-neurolens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-neurolens_dev_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-neurolens_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neurolens -d neurolens_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: neurolens_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: neurolens_api
+    restart: unless-stopped
+    environment:
+      - ENV=development
+      - FAKE_MODEL=${FAKE_MODEL:-true}
+      - DATABASE_URL=postgresql+asyncpg://neurolens:neurolens_dev_secret@postgres:5432/neurolens_db
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_DIR=/data
+    volumes:
+      - ./backend:/app/backend
+      - ./ml:/app/ml
+      - storage_data:/data
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: neurolens_worker
+    restart: unless-stopped
+    command: celery -A backend.app.workers.celery_app worker --loglevel=info
+    environment:
+      - ENV=development
+      - FAKE_MODEL=${FAKE_MODEL:-true}
+      - DATABASE_URL=postgresql+asyncpg://neurolens:neurolens_dev_secret@postgres:5432/neurolens_db
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_DIR=/data
+    volumes:
+      - ./backend:/app/backend
+      - ./ml:/app/ml
+      - storage_data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: neurolens_frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  storage_data:
