@@ -1,18 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { FileText, Download, CheckCircle, ArrowLeft, Printer, ShieldCheck } from "lucide-react";
+import { getPatientProfile, PatientProfile } from "@/lib/patientCatalog";
 
 export default function ReportEditorPage() {
   const params = useParams();
-  const reportId = (params.id as string) || "demo-report-uuid";
+  const reportId = (params.id as string) || "856c7e19-a1ae-4298-94f5-d4ad0bdc6072";
 
+  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(reportId));
   const [status, setStatus] = useState<"draft" | "reviewed" | "signed">("draft");
-  const [impression, setImpression] = useState<string>(
-    "Large right frontotemporal enhancing intra-axial brain mass consistent with high-grade glioma (Malignant). Significant mass effect with 2.3 mm midline brain shift. Substantial brain swelling (peritumoural FLAIR edema) noted around the tumour rim. Surgical evaluation advised."
-  );
+  const [impression, setImpression] = useState<string>(() => getPatientProfile(reportId).clinicalImpression);
+
+  useEffect(() => {
+    const loaded = getPatientProfile(reportId);
+    setProfile(loaded);
+    setImpression(loaded.clinicalImpression);
+  }, [reportId]);
+
+  const wt = profile.analysis.segmentation.regions.WT.volume_ml;
+  const tc = profile.analysis.segmentation.regions.TC.volume_ml;
+  const et = profile.analysis.segmentation.regions.ET.volume_ml;
+  const shift = profile.analysis.location.midline_shift_mm;
 
   return (
     <div className="flex-1 max-w-4xl mx-auto w-full p-6 space-y-6">
@@ -31,7 +42,7 @@ export default function ReportEditorPage() {
               Clinical Radiology Report
             </h1>
             <p className="text-xs text-slate-500">
-              Study ID: {reportId.slice(0, 8)} • Patient: PT-{reportId.slice(0, 6).toUpperCase()}
+              Study ID: {profile.id.slice(0, 16)} • Patient Code: {profile.code} • Demographics: {profile.age}y, {profile.sex}
             </p>
           </div>
         </div>
@@ -81,8 +92,8 @@ export default function ReportEditorPage() {
             </p>
           </div>
           <div className="text-right text-[11px] font-mono text-slate-500">
-            <div>Date: 2026-09-21</div>
-            <div>Ref: NL-{reportId.slice(0, 8).toUpperCase()}</div>
+            <div>Patient: {profile.code} ({profile.age}y {profile.sex})</div>
+            <div>Ref: NL-{profile.id.slice(0, 8).toUpperCase()}</div>
           </div>
         </div>
 
@@ -92,17 +103,32 @@ export default function ReportEditorPage() {
         </div>
 
         {/* Section 1: Classification & Malignancy */}
-        <div className="p-4 rounded-xl border border-red-200 bg-red-50/60 space-y-1">
+        <div
+          className={`p-4 rounded-xl border space-y-1 ${
+            profile.isMalignant
+              ? "border-red-200 bg-red-50/60 text-red-900"
+              : "border-emerald-200 bg-emerald-50/60 text-emerald-900"
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider text-red-800">
+            <h3 className={`font-bold uppercase text-[11px] tracking-wider ${profile.isMalignant ? "text-red-800" : "text-emerald-800"}`}>
               1. AI Classification & Tumour Nature
             </h3>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 border border-red-300 text-red-800">
-              MALIGNANT (CANCEROUS)
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                profile.isMalignant
+                  ? "bg-red-100 border-red-300 text-red-800"
+                  : "bg-emerald-100 border-emerald-300 text-emerald-800"
+              }`}
+            >
+              {profile.isMalignant ? "MALIGNANT (CANCEROUS)" : "BENIGN (NON-CANCEROUS)"}
             </span>
           </div>
           <p className="text-xs text-slate-700 leading-relaxed">
-            Consensus Prediction: <strong>Glioma</strong> (Confidence: 86%). Visual AI and Texture AI models both agree on high-grade glial tumour with active vascular enhancement and core necrosis.
+            Consensus Prediction: <strong className="capitalize">{profile.tumourType}</strong> (Confidence: {(profile.analysis.classification.ensemble.confidence * 100).toFixed(0)}%).
+            {profile.isMalignant
+              ? " Both visual deep learning and texture machine learning classifiers detect aggressive neo-vascularization or infiltrative glial expansion."
+              : " Features demonstrate circumscribed, non-infiltrative borders characteristic of benign pathology."}
           </p>
         </div>
 
@@ -112,7 +138,7 @@ export default function ReportEditorPage() {
             2. Imaging Technique & Protocol
           </h3>
           <p className="leading-relaxed text-slate-600">
-            Standard 4-sequence volumetric brain MRI acquired: T1 pre-contrast, T1ce post-gadolinium contrast, T2 axial, and FLAIR. Automated brain isolation and 1.0 mm spatial alignment completed successfully.
+            Standard 4-sequence volumetric brain MRI acquired: T1 pre-contrast, T1ce post-gadolinium contrast, T2 axial, and FLAIR. Automated brain skull-stripping and 1.0 mm isotropic spatial co-registration completed.
           </p>
         </div>
 
@@ -124,25 +150,27 @@ export default function ReportEditorPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-center">
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-[10px] text-slate-500 block font-sans">Whole Tumour (WT)</span>
-              <span className="text-base font-bold text-purple-700">46.8 mL</span>
+              <span className="text-base font-bold text-purple-700">{wt.toFixed(1)} mL</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-[10px] text-slate-500 block font-sans">Tumour Core (TC)</span>
-              <span className="text-base font-bold text-orange-600">25.3 mL</span>
+              <span className="text-base font-bold text-orange-600">{tc.toFixed(1)} mL</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-[10px] text-slate-500 block font-sans">Active Rim (ET)</span>
-              <span className="text-base font-bold text-blue-600">16.1 mL</span>
+              <span className="text-base font-bold text-blue-600">{et.toFixed(1)} mL</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <span className="text-[10px] text-slate-500 block font-sans">Brain Shift</span>
-              <span className="text-base font-bold text-red-600">2.3 mm</span>
+              <span className="text-[10px] text-slate-500 block font-sans">Midline Brain Shift</span>
+              <span className={`text-base font-bold ${shift > 2 ? "text-red-600" : "text-slate-800"}`}>
+                {shift.toFixed(1)} mm
+              </span>
             </div>
           </div>
           <div className="text-[11px] text-slate-600 space-y-0.5 pt-1">
-            <p>• Maximum Tumour Diameter: 39.4 mm (Cross-width: 32.1 mm)</p>
-            <p>• Tumour Spot Count: 1 primary concentrated mass in right frontotemporal lobes.</p>
-            <p>• Brain Shift Note: 2.3 mm midline displacement indicates significant pressure on the surrounding brain tissue.</p>
+            <p>• Max Tumour Diameter: {profile.analysis.segmentation.regions.WT.max_diameter_mm.toFixed(1)} mm (Cross-width: {profile.analysis.segmentation.regions.WT.perp_diameter_mm.toFixed(1)} mm)</p>
+            <p>• Lesion Count: {profile.analysis.segmentation.lesion_count} focal lesion(s) localized in {profile.analysis.location.lobes.join(", ")}.</p>
+            <p>• Brain Displacement: {shift > 2 ? `${shift.toFixed(1)} mm midline displacement indicates significant parenchymal pressure (mass effect).` : "No significant midline shift observed."}</p>
           </div>
         </div>
 

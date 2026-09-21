@@ -23,6 +23,7 @@ import { LesionTable } from "@/components/LesionTable";
 import { SimilarCasesGrid } from "@/components/SimilarCasesGrid";
 import { AnalysisResult } from "@/lib/types/analysis";
 import { fetchStudyAnalysis } from "@/lib/api";
+import { getPatientProfile, PatientProfile } from "@/lib/patientCatalog";
 
 export default function StudyWorkspacePage() {
   const params = useParams();
@@ -30,8 +31,9 @@ export default function StudyWorkspacePage() {
   const studyId = (params.id as string) || "demo-study-uuid";
 
   // State
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(studyId));
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(() => getPatientProfile(studyId).analysis);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Viewer State
   const [currentSequence, setCurrentSequence] = useState<string>("t1ce");
@@ -55,60 +57,20 @@ export default function StudyWorkspacePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        setLoading(true);
-        const data = await fetchStudyAnalysis(studyId);
-        setAnalysis(data);
+        const resolved = getPatientProfile(studyId);
+        setProfile(resolved);
+        try {
+          const data = await fetchStudyAnalysis(studyId);
+          setAnalysis(data);
+        } catch {
+          // Fallback to patient profile's exact clinical analysis
+          setAnalysis(resolved.analysis);
+        }
       } catch (err: any) {
-        // High-fidelity fallback for standalone UI demonstration
-        setAnalysis({
-          study_id: studyId,
-          model_versions: {
-            segmentation: "swinunetr-v1",
-            classifier: "effnet-v1",
-            classical: "svm-rbf-v1",
-          },
-          qc: { passed: true, missing_sequences: [], ood_score: 0.12, warnings: [] },
-          segmentation: {
-            mask_url: `/api/v1/studies/${studyId}/mask`,
-            uncertainty_url: `/api/v1/studies/${studyId}/uncertainty`,
-            regions: {
-              WT: { volume_ml: 46.8, max_diameter_mm: 39.4, perp_diameter_mm: 32.1, centroid_mm: [14.2, -8.6, 22.1] },
-              TC: { volume_ml: 25.3, max_diameter_mm: 27.2, perp_diameter_mm: 21.8, centroid_mm: [14.5, -8.8, 22.0] },
-              ET: { volume_ml: 16.1, max_diameter_mm: 24.0, perp_diameter_mm: 20.1, centroid_mm: [14.6, -8.7, 22.3] },
-              NCR: { volume_ml: 9.2, max_diameter_mm: 14.8, perp_diameter_mm: 11.9, centroid_mm: [14.0, -9.0, 21.8] },
-              ED: { volume_ml: 21.5, max_diameter_mm: 39.4, perp_diameter_mm: 32.1, centroid_mm: [13.8, -8.2, 22.4] },
-            },
-            lesions: [{ id: 1, volume_ml: 46.8, centroid_mm: [14.2, -8.6, 22.1] }],
-            lesion_count: 1,
-          },
-          location: {
-            hemisphere: "right",
-            lobes: ["frontal", "temporal"],
-            midline_shift_mm: 2.3,
-            confidence: "approximate",
-          },
-          classification: {
-            cnn: { label: "glioma", probs: { glioma: 0.89, meningioma: 0.05, pituitary: 0.02, metastasis: 0.04 } },
-            classical: { label: "glioma", probs: { glioma: 0.83, meningioma: 0.09, pituitary: 0.02, metastasis: 0.06 }, model: "svm-rbf" },
-            ensemble: { label: "glioma", confidence: 0.86, agree: true },
-          },
-          uncertainty: { case_score: 0.17, needs_review: false, reasons: [] },
-          habitats: { method: "gmm", k: 3, map_url: null },
-          radiomics_top_features: [
-            { name: "Contrast (Intensity Variation)", value: 14.8, importance: 0.34 },
-            { name: "Entropy (Tissue Irregularity)", value: 5.2, importance: 0.29 },
-            { name: "Elongation (Non-Spherical Shape)", value: 0.72, importance: 0.21 },
-          ],
-          similar_cases: [
-            { case_id: "BRATS21-00219", label: "glioma", similarity: 0.95 },
-            { case_id: "BRATS21-00441", label: "glioma", similarity: 0.91 },
-            { case_id: "BRATS21-00108", label: "glioma", similarity: 0.87 },
-          ],
-          urgency: { score: 0.64, rules_fired: ["Midline shift > 2.0 mm (Brain pressure)", "Large tumour volume (>30 mL)"] },
-          experimental: { idh_prediction: null, survival_bin: null },
-        });
-      } finally {
-        setLoading(false);
+        // Fallback
+        const fallback = getPatientProfile(studyId);
+        setProfile(fallback);
+        setAnalysis(fallback.analysis);
       }
     }
 
@@ -124,7 +86,7 @@ export default function StudyWorkspacePage() {
       <div className="flex-1 flex items-center justify-center p-8 space-y-4 text-center">
         <div className="space-y-3">
           <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-slate-600 font-medium">Loading Brain Scan Analysis...</p>
+          <p className="text-sm text-slate-600 font-medium">Loading Patient Brain Scan...</p>
         </div>
       </div>
     );
@@ -137,16 +99,23 @@ export default function StudyWorkspacePage() {
       {/* Top Context Bar */}
       <div className="flex items-center justify-between px-6 py-2.5 bg-white border-b border-slate-200 text-xs shadow-xs">
         <div className="flex items-center gap-3">
-          <span className="font-bold text-slate-900 font-mono">Scan: {studyId.slice(0, 8)}</span>
+          <span className="font-bold text-slate-900 font-mono">Patient: {profile.code}</span>
           <span className="text-slate-300">•</span>
           <span className="px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 font-semibold">
-            Protocol: 4-Sequence MRI
+            {profile.scenarioName}
           </span>
           <span className="text-slate-300">•</span>
-          <span className="text-slate-600 font-medium">Patient: PT-{studyId.slice(0, 6).toUpperCase()}</span>
+          <span className="text-slate-600 font-medium">Demographics: {profile.age}y, {profile.sex}</span>
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            href={`/insights?studyId=${studyId}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium transition"
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-purple-600" />
+            <span>AI Insights</span>
+          </Link>
           <Link
             href="/info"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium transition"
@@ -199,6 +168,7 @@ export default function StudyWorkspacePage() {
               showUncertainty={showUncertainty}
               showHabitats={showHabitats}
               showGradCam={showGradCam}
+              lesions={profile.viewerLesions}
             />
           </div>
 

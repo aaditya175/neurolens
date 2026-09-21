@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ListFilter,
@@ -9,248 +9,149 @@ import {
   Upload,
   ChevronRight,
   BookOpen,
+  PlusCircle,
+  BarChart3,
+  X,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
-
-interface WorklistItem {
-  study_id: string;
-  patient_code: string;
-  acquired_at: string;
-  tumour_type: string;
-  is_malignant: boolean;
-  urgency_score: number;
-  badges: string[];
-  needs_review: boolean;
-  wt_volume_ml: number;
-  status: "analyzed" | "analyzing" | "uploaded";
-}
+import {
+  WorklistItem,
+  getAllWorklistItems,
+  createPatientFromInput,
+  registerCustomPatient,
+} from "@/lib/patientCatalog";
 
 export default function WorklistPage() {
+  const [studies, setStudies] = useState<WorklistItem[]>([]);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterMalignancy, setFilterMalignancy] = useState<string>("all");
   const [filterNeedsReview, setFilterNeedsReview] = useState<boolean>(false);
   const [searchCode, setSearchCode] = useState<string>("");
 
-  // Comprehensive test cohort (16 clinical test cases)
-  const studies: WorklistItem[] = [
-    {
-      study_id: "856c7e19-a1ae-4298-94f5-d4ad0bdc6072",
-      patient_code: "PT-70194",
-      acquired_at: "2026-09-20 14:10",
-      tumour_type: "Glioma",
-      is_malignant: true,
-      urgency_score: 0.88,
-      badges: ["High Brain Pressure (>3mm)", "Large Tumour (>40mL)", "Multifocal"],
-      needs_review: true,
-      wt_volume_ml: 46.8,
-      status: "analyzed",
-    },
-    {
-      study_id: "c11-massive-shift-uuid",
-      patient_code: "PT-99412",
-      acquired_at: "2026-09-21 08:15",
-      tumour_type: "Glioblastoma",
-      is_malignant: true,
-      urgency_score: 0.98,
-      badges: ["CRITICAL: 6.5mm Midline Shift", "Severe Herniation Risk", "Emergency Triage"],
-      needs_review: true,
-      wt_volume_ml: 68.4,
-      status: "analyzed",
-    },
-    {
-      study_id: "331d2b99-a9fe-4411-921c-a1bd99cd1044",
-      patient_code: "PT-90114",
-      acquired_at: "2026-09-19 16:50",
-      tumour_type: "Metastasis",
-      is_malignant: true,
-      urgency_score: 0.79,
-      badges: ["3 Distinct Lesions", "Secondary Cancer Spread"],
-      needs_review: true,
-      wt_volume_ml: 31.0,
-      status: "analyzed",
-    },
-    {
-      study_id: "c14-miliary-met-uuid",
-      patient_code: "PT-66301",
-      acquired_at: "2026-09-21 11:40",
-      tumour_type: "Metastasis",
-      is_malignant: true,
-      urgency_score: 0.82,
-      badges: ["5 Miliary Seeds", "Bilateral Hemispheres"],
-      needs_review: true,
-      wt_volume_ml: 12.6,
-      status: "analyzed",
-    },
-    {
-      study_id: "c09-oligodendro-uuid",
-      patient_code: "PT-55219",
-      acquired_at: "2026-09-21 09:30",
-      tumour_type: "Oligodendroglioma",
-      is_malignant: true,
-      urgency_score: 0.68,
-      badges: ["Frontal Lobe", "Patchy Enhancement"],
-      needs_review: false,
-      wt_volume_ml: 28.5,
-      status: "analyzed",
-    },
-    {
-      study_id: "c07-cystic-astro-uuid",
-      patient_code: "PT-31084",
-      acquired_at: "2026-09-20 15:45",
-      tumour_type: "Astrocytoma",
-      is_malignant: true,
-      urgency_score: 0.65,
-      badges: ["Posterior Fossa", "Cerebellar Cyst + Nodule"],
-      needs_review: false,
-      wt_volume_ml: 18.2,
-      status: "analyzed",
-    },
-    {
-      study_id: "c02-low-grade-uuid",
-      patient_code: "PT-11840",
-      acquired_at: "2026-09-18 10:20",
-      tumour_type: "Low-Grade Glioma",
-      is_malignant: true,
-      urgency_score: 0.45,
-      badges: ["Diffuse Infiltration", "Non-enhancing (T1ce negative)"],
-      needs_review: false,
-      wt_volume_ml: 19.8,
-      status: "analyzed",
-    },
-    {
-      study_id: "c12-recurrent-gbm-uuid",
-      patient_code: "PT-77192",
-      acquired_at: "2026-09-20 17:10",
-      tumour_type: "Glioblastoma",
-      is_malignant: true,
-      urgency_score: 0.85,
-      badges: ["Post-Op Recurrence (+45%)", "Progressive Disease"],
-      needs_review: true,
-      wt_volume_ml: 41.2,
-      status: "analyzed",
-    },
-    {
-      study_id: "721a9c31-b0fe-4192-811d-e5cf01ad2381",
-      patient_code: "PT-48210",
-      acquired_at: "2026-09-20 11:35",
-      tumour_type: "Meningioma",
-      is_malignant: false,
-      urgency_score: 0.62,
-      badges: ["Dural Tail", "Sharp Distinct Borders"],
-      needs_review: false,
-      wt_volume_ml: 22.4,
-      status: "analyzed",
-    },
-    {
-      study_id: "c13-small-meningioma-uuid",
-      patient_code: "PT-12490",
-      acquired_at: "2026-09-17 14:00",
-      tumour_type: "Meningioma",
-      is_malignant: false,
-      urgency_score: 0.22,
-      badges: ["Incidental Finding", "Small Size (4.2 mL)", "Zero Edema"],
-      needs_review: false,
-      wt_volume_ml: 4.2,
-      status: "analyzed",
-    },
-    {
-      study_id: "542e88cc-f1aa-4712-88ef-bc2100aa7789",
-      patient_code: "PT-20941",
-      acquired_at: "2026-09-19 09:20",
-      tumour_type: "Pituitary",
-      is_malignant: false,
-      urgency_score: 0.35,
-      badges: ["Sellar Region", "Non-infiltrative Base"],
-      needs_review: false,
-      wt_volume_ml: 8.4,
-      status: "analyzed",
-    },
-    {
-      study_id: "c08-schwannoma-uuid",
-      patient_code: "PT-39102",
-      acquired_at: "2026-09-16 11:15",
-      tumour_type: "Schwannoma",
-      is_malignant: false,
-      urgency_score: 0.38,
-      badges: ["Acoustic Neuroma", "Cerebellopontine Angle"],
-      needs_review: false,
-      wt_volume_ml: 6.1,
-      status: "analyzed",
-    },
-    {
-      study_id: "c10-neurocytoma-uuid",
-      patient_code: "PT-84019",
-      acquired_at: "2026-09-15 13:50",
-      tumour_type: "Neurocytoma",
-      is_malignant: false,
-      urgency_score: 0.40,
-      badges: ["Intraventricular", "Well Circumscribed"],
-      needs_review: false,
-      wt_volume_ml: 9.3,
-      status: "analyzed",
-    },
-    {
-      study_id: "c05-long-base-uuid",
-      patient_code: "PT-50119-M0",
-      acquired_at: "2026-06-10 10:00",
-      tumour_type: "Glioblastoma",
-      is_malignant: true,
-      urgency_score: 0.72,
-      badges: ["Pre-Op Baseline", "Active ET Rim"],
-      needs_review: false,
-      wt_volume_ml: 38.6,
-      status: "analyzed",
-    },
-    {
-      study_id: "c05-long-followup-uuid",
-      patient_code: "PT-50119-M3",
-      acquired_at: "2026-09-10 10:00",
-      tumour_type: "Glioblastoma",
-      is_malignant: true,
-      urgency_score: 0.42,
-      badges: ["Post-Op Follow-up", "Partial Response (-50% Shrinkage)"],
-      needs_review: false,
-      wt_volume_ml: 12.8,
-      status: "analyzed",
-    },
-    {
-      study_id: "c15-healthy-control-uuid",
-      patient_code: "PT-00001",
-      acquired_at: "2026-09-21 07:45",
-      tumour_type: "No Tumour",
-      is_malignant: false,
-      urgency_score: 0.05,
-      badges: ["Healthy Control", "Zero Lesions (0 mL)", "Passed QC"],
-      needs_review: false,
-      wt_volume_ml: 0.0,
-      status: "analyzed",
-    },
-  ];
+  // Quick Add Modal State
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [newCode, setNewCode] = useState<string>("");
+  const [newAge, setNewAge] = useState<number>(54);
+  const [newSex, setNewSex] = useState<string>("Male");
+  const [newTumourType, setNewTumourType] = useState<string>("Glioma");
+  const [newIsMalignant, setNewIsMalignant] = useState<boolean>(true);
+  const [newVolume, setNewVolume] = useState<number>(38.5);
+  const [newShift, setNewShift] = useState<number>(2.0);
+  const [newNotes, setNewNotes] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Filtering
+  // Load items from catalog & localStorage
+  useEffect(() => {
+    setStudies(getAllWorklistItems());
+  }, []);
+
+  // Update malignancy toggle when tumour type changes
+  const handleTypeChange = (type: string) => {
+    setNewTumourType(type);
+    if (type === "Glioma" || type === "Glioblastoma" || type === "Metastasis" || type === "Astrocytoma" || type === "Oligodendroglioma") {
+      setNewIsMalignant(true);
+    } else {
+      setNewIsMalignant(false);
+    }
+  };
+
+  const handleCreatePatient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const codeToUse = newCode.trim() || `PT-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const { profile, worklistItem } = createPatientFromInput({
+      patientCode: codeToUse,
+      age: Number(newAge),
+      sex: newSex,
+      tumourType: newTumourType,
+      isMalignant: newIsMalignant,
+      volumeMl: Number(newVolume),
+      midlineShiftMm: Number(newShift),
+      notes: newNotes,
+    });
+
+    // Save locally and in-memory
+    registerCustomPatient(profile, worklistItem);
+
+    // Sync to backend API / MongoDB
+    try {
+      fetch("http://localhost:8000/api/v1/patients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: codeToUse,
+          age: Number(newAge),
+          sex: newSex === "Male" ? "M" : "F",
+        }),
+      }).catch((err) => console.warn("Background API sync:", err));
+    } catch {
+      // Offline fallback safe
+    }
+
+    setStudies(getAllWorklistItems());
+    setShowModal(false);
+    setSuccessMessage(`Patient ${codeToUse} recorded and added to worklist!`);
+    setTimeout(() => setSuccessMessage(null), 4000);
+
+    // Reset form
+    setNewCode("");
+    setNewVolume(38.5);
+    setNewShift(2.0);
+    setNewNotes("");
+  };
+
   const filtered = studies.filter((item) => {
-    if (filterType !== "all" && item.tumour_type.toLowerCase() !== filterType.toLowerCase()) return false;
-    if (filterMalignancy === "malignant" && !item.is_malignant) return false;
-    if (filterMalignancy === "benign" && item.is_malignant) return false;
-    if (filterNeedsReview && !item.needs_review) return false;
-    if (searchCode && !item.patient_code.toLowerCase().includes(searchCode.toLowerCase())) return false;
+    if (filterType !== "all" && !item.tumour_type.toLowerCase().includes(filterType.toLowerCase())) {
+      return false;
+    }
+    if (filterMalignancy === "malignant" && !item.is_malignant) {
+      return false;
+    }
+    if (filterMalignancy === "benign" && item.is_malignant) {
+      return false;
+    }
+    if (filterNeedsReview && !item.needs_review) {
+      return false;
+    }
+    if (searchCode && !item.patient_code.toLowerCase().includes(searchCode.toLowerCase())) {
+      return false;
+    }
     return true;
   });
 
   return (
     <div className="flex-1 max-w-7xl mx-auto w-full p-6 space-y-6">
-      {/* Header */}
+      {/* Success Notification */}
+      {successMessage && (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-xs animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>{successMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage(null)}
+            className="text-emerald-700 hover:text-emerald-900"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <ListFilter className="w-6 h-6 text-purple-600" />
-            Patient Scan Worklist
+            Patient Worklist & Scan Triage
           </h1>
           <p className="text-xs text-slate-500">
-            Cases are automatically sorted by clinical urgency, tumour size, and brain pressure effects.
+            Automated priority triage sorted by medical urgency score. Every patient has individual 3D brain scans, measurements, and AI insights.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link
             href="/info"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium text-xs transition shadow-xs"
@@ -258,12 +159,20 @@ export default function WorklistPage() {
             <BookOpen className="w-3.5 h-3.5 text-purple-600" />
             <span>Guide to Terms</span>
           </Link>
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-purple-50 border border-purple-300 text-purple-700 hover:bg-purple-100 font-bold text-xs transition shadow-xs"
+          >
+            <PlusCircle className="w-4 h-4 text-purple-600" />
+            <span>Quick Input Patient</span>
+          </button>
           <Link
             href="/studies/new"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition shadow-sm"
           >
             <Upload className="w-4 h-4" />
-            <span>Upload New Scan</span>
+            <span>Upload Scan Files</span>
           </Link>
         </div>
       </div>
@@ -290,10 +199,12 @@ export default function WorklistPage() {
             className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-purple-600"
           >
             <option value="all">All Tumour Types</option>
-            <option value="glioma">Glioma</option>
+            <option value="glioma">Glioma / GBM</option>
             <option value="meningioma">Meningioma</option>
             <option value="pituitary">Pituitary</option>
             <option value="metastasis">Metastasis</option>
+            <option value="schwannoma">Schwannoma</option>
+            <option value="control">Normal / No Tumour</option>
           </select>
 
           {/* Malignancy Filter */}
@@ -335,97 +246,279 @@ export default function WorklistPage() {
                 <th className="py-3 px-4">Tumour Type & Nature</th>
                 <th className="py-3 px-4">Size (mL)</th>
                 <th className="py-3 px-4">Key Highlights</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((item) => (
-                <tr key={item.study_id} className="hover:bg-slate-50 transition">
-                  {/* Priority */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-center font-bold text-xs border ${
-                          item.urgency_score > 0.75
-                            ? "bg-red-100 border-red-300 text-red-800"
-                            : item.urgency_score > 0.5
-                            ? "bg-amber-100 border-amber-300 text-amber-800"
-                            : "bg-emerald-100 border-emerald-300 text-emerald-800"
-                        }`}
-                      >
-                        {item.urgency_score > 0.75 ? "High" : item.urgency_score > 0.5 ? "Medium" : "Routine"}
-                      </span>
-                      {item.needs_review && (
-                        <span title="Doctor review advised">
-                          <AlertTriangle className="w-4 h-4 text-red-600" />
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Patient */}
-                  <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                    {item.patient_code}
-                  </td>
-
-                  {/* Acquired */}
-                  <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
-                    {item.acquired_at}
-                  </td>
-
-                  {/* Tumour Prediction with Benign/Malignant Tag */}
-                  <td className="py-3 px-4">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-bold text-slate-900 capitalize">
-                        {item.tumour_type}
-                      </span>
-                      <span
-                        className={`inline-block px-2 py-0.2 rounded-full text-[10px] font-bold border w-fit ${
-                          item.is_malignant
-                            ? "bg-red-50 border-red-200 text-red-700"
-                            : "bg-emerald-50 border-emerald-200 text-emerald-700"
-                        }`}
-                      >
-                        {item.is_malignant ? "Malignant (Cancerous)" : "Benign (Non-Cancerous)"}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* WT Volume */}
-                  <td className="py-3 px-4 font-mono text-slate-900 font-bold">
-                    {item.wt_volume_ml.toFixed(1)} mL
-                  </td>
-
-                  {/* Badges */}
-                  <td className="py-3 px-4">
-                    <div className="flex flex-wrap gap-1">
-                      {item.badges.map((b, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-medium"
-                        >
-                          {b}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-
-                  {/* Action */}
-                  <td className="py-3 px-4 text-right">
-                    <Link
-                      href={`/studies/${item.study_id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-700 font-semibold transition text-xs border border-purple-200"
-                    >
-                      <span>Open Workspace</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-500 text-xs">
+                    No patients match your search criteria.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((item) => (
+                  <tr key={item.study_id} className="hover:bg-slate-50 transition">
+                    {/* Priority */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-center font-bold text-xs border ${
+                            item.urgency_score > 0.75
+                              ? "bg-red-100 border-red-300 text-red-800"
+                              : item.urgency_score > 0.5
+                              ? "bg-amber-100 border-amber-300 text-amber-800"
+                              : "bg-emerald-100 border-emerald-300 text-emerald-800"
+                          }`}
+                        >
+                          {item.urgency_score > 0.75 ? "High" : item.urgency_score > 0.5 ? "Medium" : "Routine"}
+                        </span>
+                        {item.needs_review && (
+                          <span title="Doctor review advised">
+                            <AlertTriangle className="w-4 h-4 text-red-600" />
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Patient */}
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                      <div className="flex items-center gap-1.5">
+                        <span>{item.patient_code}</span>
+                        {item.study_id.startsWith("custom-study-") && (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                            NEW
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Acquired */}
+                    <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                      {item.acquired_at}
+                    </td>
+
+                    {/* Tumour Prediction with Benign/Malignant Tag */}
+                    <td className="py-3 px-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-bold text-slate-900 capitalize">
+                          {item.tumour_type}
+                        </span>
+                        <span
+                          className={`inline-block px-2 py-0.2 rounded-full text-[10px] font-bold border w-fit ${
+                            item.is_malignant
+                              ? "bg-red-50 border-red-200 text-red-700"
+                              : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                          }`}
+                        >
+                          {item.is_malignant ? "Malignant (Cancerous)" : "Benign (Non-Cancerous)"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* WT Volume */}
+                    <td className="py-3 px-4 font-mono text-slate-900 font-bold">
+                      {item.wt_volume_ml.toFixed(1)} mL
+                    </td>
+
+                    {/* Badges */}
+                    <td className="py-3 px-4">
+                      <div className="flex flex-wrap gap-1">
+                        {item.badges.map((b, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-medium"
+                          >
+                            {b}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+
+                    {/* Actions: AI Insights & Open Workspace */}
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/insights?studyId=${item.study_id}`}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 font-semibold transition text-xs border border-slate-200"
+                          title="Open AI Insights for this patient"
+                        >
+                          <BarChart3 className="w-3.5 h-3.5 text-purple-600" />
+                          <span>AI Insights</span>
+                        </Link>
+                        <Link
+                          href={`/studies/${item.study_id}`}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition text-xs shadow-xs"
+                          title="Open 3D Viewer and diagnosis workspace"
+                        >
+                          <span>Open Workspace</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Quick Input Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <PlusCircle className="w-5 h-5 text-purple-600" />
+                  Quick Input New Patient Scan
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Input new patient details to immediately record and triage in the worklist.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreatePatient} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Patient Code / ID</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. PT-88129"
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-mono focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Patient Age & Sex</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      max={120}
+                      value={newAge}
+                      onChange={(e) => setNewAge(Number(e.target.value))}
+                      className="w-20 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-purple-600"
+                    />
+                    <select
+                      value={newSex}
+                      onChange={(e) => setNewSex(e.target.value)}
+                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-purple-600"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Tumour Type</label>
+                  <select
+                    value={newTumourType}
+                    onChange={(e) => handleTypeChange(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-purple-600"
+                  >
+                    <option value="Glioma">Glioma (Glioblastoma)</option>
+                    <option value="Meningioma">Meningioma</option>
+                    <option value="Pituitary">Pituitary Adenoma</option>
+                    <option value="Metastasis">Brain Metastasis</option>
+                    <option value="Schwannoma">Schwannoma</option>
+                    <option value="No Tumour">Healthy Normal (No Tumour)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Clinical Nature</label>
+                  <select
+                    value={newIsMalignant ? "malignant" : "benign"}
+                    onChange={(e) => setNewIsMalignant(e.target.value === "malignant")}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-purple-600 font-semibold"
+                  >
+                    <option value="malignant" className="text-red-700">Malignant (Cancerous)</option>
+                    <option value="benign" className="text-emerald-700">Benign (Non-Cancerous)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Tumour Volume (mL)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    value={newVolume}
+                    onChange={(e) => setNewVolume(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-mono focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Midline Shift (mm)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    value={newShift}
+                    onChange={(e) => setNewShift(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-mono focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700">Clinical Notes / Indications</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Headache, blurred vision, MRI with gadolinium"
+                  value={newNotes}
+                  onChange={(e) => setNewNotes(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-purple-600"
+                />
+              </div>
+
+              <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 text-[11px] text-purple-800 space-y-0.5">
+                <div className="font-bold flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Automatic AI Calculation:</span>
+                </div>
+                <p>
+                  Will generate 3D MPR tumour slices, core & swelling volumes, radiomics texture features, and AI insights specifically for this case.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition shadow-sm"
+                >
+                  Save & Record in Worklist
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

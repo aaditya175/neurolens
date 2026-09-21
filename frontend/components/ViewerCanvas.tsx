@@ -12,6 +12,14 @@ interface ViewerCanvasProps {
   showUncertainty?: boolean;
   showHabitats?: boolean;
   showGradCam?: boolean;
+  lesions?: Array<{
+    cx: number;
+    cy: number;
+    cz: number;
+    r_ed: number;
+    r_et: number;
+    r_ncr: number;
+  }>;
 }
 
 export function ViewerCanvas({
@@ -23,6 +31,7 @@ export function ViewerCanvas({
   showUncertainty = false,
   showHabitats = false,
   showGradCam = false,
+  lesions,
 }: ViewerCanvasProps) {
   // 3D Crosshair coordinates in volume space [x, y, z] (0 to 95 for 96^3 volume)
   const [coords, setCoords] = useState<{ x: number; y: number; z: number }>({
@@ -45,12 +54,26 @@ export function ViewerCanvas({
   const coronalRef = useRef<HTMLCanvasElement | null>(null);
   const sagittalRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Default lesion if none provided
+  const activeLesions = lesions !== undefined ? lesions : [
+    { cx: 62, cy: 40, cz: 48, r_ed: 36, r_et: 22, r_ncr: 11 }
+  ];
+
+  // Auto-center crosshairs on lesion when switching patients
+  useEffect(() => {
+    if (lesions && lesions.length > 0) {
+      setCoords({ x: lesions[0].cx, y: lesions[0].cy, z: lesions[0].cz });
+    } else if (lesions && lesions.length === 0) {
+      setCoords({ x: 48, y: 48, z: 48 });
+    }
+  }, [lesions]);
+
   // Draw simulated anatomically plausible MPR slices with tumour mask
   useEffect(() => {
     drawPlane("axial", axialRef.current, coords.z, coords.x, coords.y);
     drawPlane("coronal", coronalRef.current, coords.y, coords.x, coords.z);
     drawPlane("sagittal", sagittalRef.current, coords.x, coords.y, coords.z);
-  }, [coords, currentSequence, maskOpacity, showMask, activeRegions, showUncertainty, showHabitats, showGradCam, zoom, windowLevel]);
+  }, [coords, currentSequence, maskOpacity, showMask, activeRegions, showUncertainty, showHabitats, showGradCam, zoom, windowLevel, lesions]);
 
   const drawPlane = (
     plane: "axial" | "coronal" | "sagittal",
@@ -104,61 +127,79 @@ export function ViewerCanvas({
     ctx.fillStyle = currentSequence === "t2" ? "#ffffff" : "#070b14"; // Bright on T2, dark on T1/FLAIR
     ctx.fill();
 
-    // 2. Draw Tumour (Right Hemisphere: offset +x, -y)
-    const tCenterDistFromSlice = Math.abs(slice - 48);
-    if (tCenterDistFromSlice < 28) {
-      const sliceScale = Math.cos((tCenterDistFromSlice / 28) * (Math.PI / 2));
-      const tx = cx + (plane === "sagittal" ? 0 : 38);
-      const ty = cy - 14;
+    // 2. Draw Tumour Lesions (dynamic per patient case)
+    activeLesions.forEach((lesion) => {
+      // Determine distance from slice cut depending on viewing plane
+      const sliceTarget = plane === "axial" ? lesion.cz : plane === "coronal" ? lesion.cy : lesion.cx;
+      const tCenterDistFromSlice = Math.abs(slice - sliceTarget);
+      const maxDist = Math.max(lesion.r_ed, lesion.r_et, lesion.r_ncr, 1);
 
-      // Edema (ED = 2, Yellow)
-      const rEd = 36 * sliceScale;
-      if (showMask && activeRegions.ED !== false && maskOpacity > 0) {
-        ctx.beginPath();
-        ctx.arc(tx, ty, rEd, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(234, 179, 8, ${maskOpacity * 0.7})`;
-        ctx.fill();
-      }
+      if (tCenterDistFromSlice < maxDist) {
+        const sliceScale = Math.cos((tCenterDistFromSlice / maxDist) * (Math.PI / 2));
 
-      // Enhancing Rim (ET = 3, Cyan)
-      const rEt = 22 * sliceScale;
-      if (showMask && activeRegions.ET !== false && maskOpacity > 0) {
-        ctx.beginPath();
-        ctx.arc(tx, ty, rEt, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(6, 182, 212, ${maskOpacity * 0.85})`;
-        ctx.fill();
-      }
+        // Calculate 2D position in canvas
+        let tx = cx;
+        let ty = cy;
+        if (plane === "axial") {
+          tx = (lesion.cx / 96) * width;
+          ty = (lesion.cy / 96) * height;
+        } else if (plane === "coronal") {
+          tx = (lesion.cx / 96) * width;
+          ty = (lesion.cz / 96) * height;
+        } else {
+          tx = (lesion.cy / 96) * width;
+          ty = (lesion.cz / 96) * height;
+        }
 
-      // Necrotic Core (NCR = 1, Red)
-      const rNcr = 11 * sliceScale;
-      if (showMask && activeRegions.NCR !== false && maskOpacity > 0) {
-        ctx.beginPath();
-        ctx.arc(tx, ty, rNcr, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(239, 68, 68, ${maskOpacity * 0.9})`;
-        ctx.fill();
-      }
+        // Edema (ED = 2, Yellow)
+        const rEd = lesion.r_ed * sliceScale;
+        if (showMask && activeRegions.ED !== false && maskOpacity > 0 && rEd > 0) {
+          ctx.beginPath();
+          ctx.arc(tx, ty, rEd, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(234, 179, 8, ${maskOpacity * 0.7})`;
+          ctx.fill();
+        }
 
-      // Research Overlays: Uncertainty Entropy Heatmap
-      if (showUncertainty) {
-        ctx.beginPath();
-        ctx.arc(tx, ty, rEd + 6, 0, Math.PI * 2);
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = "rgba(245, 158, 11, 0.7)"; // Amber glow at border
-        ctx.stroke();
-      }
+        // Enhancing Rim (ET = 3, Cyan)
+        const rEt = lesion.r_et * sliceScale;
+        if (showMask && activeRegions.ET !== false && maskOpacity > 0 && rEt > 0) {
+          ctx.beginPath();
+          ctx.arc(tx, ty, rEt, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(6, 182, 212, ${maskOpacity * 0.85})`;
+          ctx.fill();
+        }
 
-      // Research Overlays: Grad-CAM
-      if (showGradCam) {
-        const gradCam = ctx.createRadialGradient(tx, ty, 2, tx, ty, rEt + 15);
-        gradCam.addColorStop(0, "rgba(220, 38, 38, 0.65)");
-        gradCam.addColorStop(0.5, "rgba(245, 158, 11, 0.45)");
-        gradCam.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.beginPath();
-        ctx.arc(tx, ty, rEt + 15, 0, Math.PI * 2);
-        ctx.fillStyle = gradCam;
-        ctx.fill();
+        // Necrotic Core (NCR = 1, Red)
+        const rNcr = lesion.r_ncr * sliceScale;
+        if (showMask && activeRegions.NCR !== false && maskOpacity > 0 && rNcr > 0) {
+          ctx.beginPath();
+          ctx.arc(tx, ty, rNcr, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(239, 68, 68, ${maskOpacity * 0.9})`;
+          ctx.fill();
+        }
+
+        // Research Overlays: Uncertainty Entropy Heatmap
+        if (showUncertainty && rEd > 0) {
+          ctx.beginPath();
+          ctx.arc(tx, ty, rEd + 6, 0, Math.PI * 2);
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = "rgba(245, 158, 11, 0.7)";
+          ctx.stroke();
+        }
+
+        // Research Overlays: Grad-CAM
+        if (showGradCam && rEt > 0) {
+          const gradCam = ctx.createRadialGradient(tx, ty, 2, tx, ty, rEt + 15);
+          gradCam.addColorStop(0, "rgba(220, 38, 38, 0.65)");
+          gradCam.addColorStop(0.5, "rgba(245, 158, 11, 0.45)");
+          gradCam.addColorStop(1, "rgba(0, 0, 0, 0)");
+          ctx.beginPath();
+          ctx.arc(tx, ty, rEt + 15, 0, Math.PI * 2);
+          ctx.fillStyle = gradCam;
+          ctx.fill();
+        }
       }
-    }
+    });
 
     // 3. Crosshairs Sync
     if (showCrosshairs) {

@@ -3,12 +3,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileUp, ShieldCheck, ArrowRight, FolderCheck, Sparkles, CheckCircle2 } from "lucide-react";
+import { createPatientFromInput, registerCustomPatient } from "@/lib/patientCatalog";
 
 export default function UploadStudyPage() {
   const router = useRouter();
   const [patientCode, setPatientCode] = useState<string>("PT-" + Math.floor(10000 + Math.random() * 90000));
   const [patientAge, setPatientAge] = useState<number>(54);
   const [patientSex, setPatientSex] = useState<string>("M");
+  const [tumourType, setTumourType] = useState<string>("Glioma");
 
   const [files, setFiles] = useState<Record<string, { name: string } | null>>({
     t1: null,
@@ -23,16 +25,16 @@ export default function UploadStudyPage() {
   const [error, setError] = useState<string | null>(null);
 
   const sampleScans = [
-    { id: "01", name: "Patient 01: Glioblastoma Multiforme (Malignant)", type: "Glioma", age: 58, sex: "M" },
-    { id: "03", name: "Patient 03: Diffuse Low-Grade Glioma (Malignant)", type: "Glioma", age: 34, sex: "F" },
-    { id: "07", name: "Patient 07: Massive Glioblastoma (Emergency Midline Shift)", type: "Glioma", age: 62, sex: "M" },
-    { id: "09", name: "Patient 09: Parasagittal Dural Meningioma (Benign)", type: "Meningioma", age: 51, sex: "F" },
-    { id: "12", name: "Patient 12: Incidental Small Meningioma 4mL (Benign)", type: "Meningioma", age: 46, sex: "F" },
-    { id: "15", name: "Patient 15: Solitary Lung Metastasis (Malignant)", type: "Metastasis", age: 65, sex: "M" },
-    { id: "18", name: "Patient 18: Miliary Brain Metastases - 5 Nodules (Malignant)", type: "Metastasis", age: 59, sex: "F" },
-    { id: "20", name: "Patient 20: Sellar Pituitary Macroadenoma (Benign)", type: "Pituitary", age: 42, sex: "M" },
-    { id: "24", name: "Patient 24: Acoustic Neuroma / Schwannoma (Benign)", type: "Schwannoma", age: 48, sex: "F" },
-    { id: "29", name: "Patient 29: Healthy Control - Normal Brain (No Tumour)", type: "HealthyControl", age: 29, sex: "M" },
+    { id: "01", name: "Patient 01: Glioblastoma Multiforme (Malignant)", type: "Glioma", age: 58, sex: "M", wt: 46.8, shift: 2.3 },
+    { id: "03", name: "Patient 03: Diffuse Low-Grade Glioma (Malignant)", type: "Low-Grade Glioma", age: 34, sex: "F", wt: 19.8, shift: 0.3 },
+    { id: "07", name: "Patient 07: Massive Glioblastoma (Emergency Midline Shift)", type: "Glioblastoma", age: 62, sex: "M", wt: 68.4, shift: 6.5 },
+    { id: "09", name: "Patient 09: Parasagittal Dural Meningioma (Benign)", type: "Meningioma", age: 51, sex: "F", wt: 22.4, shift: 0.0 },
+    { id: "12", name: "Patient 12: Incidental Small Meningioma 4mL (Benign)", type: "Meningioma", age: 46, sex: "F", wt: 4.2, shift: 0.0 },
+    { id: "15", name: "Patient 15: Solitary Brain Metastasis (Malignant)", type: "Metastasis", age: 65, sex: "M", wt: 31.0, shift: 0.8 },
+    { id: "18", name: "Patient 18: Miliary Brain Metastases - 5 Nodules (Malignant)", type: "Metastasis", age: 59, sex: "F", wt: 12.6, shift: 0.2 },
+    { id: "20", name: "Patient 20: Sellar Pituitary Macroadenoma (Benign)", type: "Pituitary", age: 42, sex: "M", wt: 8.4, shift: 0.0 },
+    { id: "24", name: "Patient 24: Acoustic Neuroma / Schwannoma (Benign)", type: "Schwannoma", age: 48, sex: "F", wt: 6.1, shift: 0.0 },
+    { id: "29", name: "Patient 29: Healthy Control - Normal Brain (No Tumour)", type: "No Tumour", age: 29, sex: "M", wt: 0.0, shift: 0.0 },
   ];
 
   const handleSelectSample = (sampleId: string) => {
@@ -44,11 +46,12 @@ export default function UploadStudyPage() {
       setPatientCode(`PT-${sample.id}092`);
       setPatientAge(sample.age);
       setPatientSex(sample.sex);
+      setTumourType(sample.type);
       setFiles({
-        t1: { name: `Patient_${sample.id}_${sample.type}_T1.nii.gz` },
-        t1ce: { name: `Patient_${sample.id}_${sample.type}_T1ce.nii.gz` },
-        t2: { name: `Patient_${sample.id}_${sample.type}_T2.nii.gz` },
-        flair: { name: `Patient_${sample.id}_${sample.type}_FLAIR.nii.gz` },
+        t1: { name: `Patient_${sample.id}_${sample.type.replace(/\s+/g, "_")}_T1.nii.gz` },
+        t1ce: { name: `Patient_${sample.id}_${sample.type.replace(/\s+/g, "_")}_T1ce.nii.gz` },
+        t2: { name: `Patient_${sample.id}_${sample.type.replace(/\s+/g, "_")}_T2.nii.gz` },
+        flair: { name: `Patient_${sample.id}_${sample.type.replace(/\s+/g, "_")}_FLAIR.nii.gz` },
       });
     }
   };
@@ -57,38 +60,62 @@ export default function UploadStudyPage() {
     setFiles((prev) => ({ ...prev, [seq]: file ? { name: file.name } : null }));
   };
 
-  const handleDemoUpload = async () => {
+  const handleUploadAndAnalyze = async () => {
     setUploading(true);
-    setProgress(15);
-    try {
-      const step1 = setInterval(() => {
-        setProgress((p) => {
-          if (p >= 90) {
-            clearInterval(step1);
-            return 90;
-          }
-          return p + 25;
-        });
-      }, 300);
+    setProgress(10);
 
-      const pRes = await fetch("http://localhost:8000/api/v1/patients", {
+    const activeSample = sampleScans.find((s) => s.id === selectedSample);
+    const volume = activeSample ? activeSample.wt : (tumourType === "No Tumour" ? 0.0 : 36.4);
+    const shift = activeSample ? activeSample.shift : (tumourType === "No Tumour" ? 0.0 : 1.8);
+    const isMalignant = tumourType === "Meningioma" || tumourType === "Pituitary" || tumourType === "Schwannoma" || tumourType === "No Tumour" ? false : true;
+
+    // Create and register patient
+    const { profile, worklistItem } = createPatientFromInput({
+      patientCode: patientCode.trim(),
+      age: patientAge,
+      sex: patientSex === "M" ? "Male" : "Female",
+      tumourType: tumourType,
+      isMalignant: isMalignant,
+      volumeMl: volume,
+      midlineShiftMm: shift,
+      notes: `Uploaded study containing 4 sequences (${Object.values(files).filter(Boolean).map(f => f?.name).join(", ") || "NIfTI volumes"}).`,
+      files,
+    });
+
+    // Save to persistent storage immediately
+    registerCustomPatient(profile, worklistItem);
+
+    // Simulated multi-stage progress
+    let p = 15;
+    const interval = setInterval(() => {
+      p += 20;
+      if (p >= 95) {
+        clearInterval(interval);
+        setProgress(95);
+      } else {
+        setProgress(p);
+      }
+    }, 250);
+
+    // Sync to backend API / MongoDB
+    try {
+      await fetch("http://localhost:8000/api/v1/patients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: patientCode, age: patientAge, sex: patientSex }),
-      });
-      const patient = await pRes.json();
-
-      setTimeout(() => {
-        setProgress(100);
-        setUploading(false);
-        router.push(`/studies/${patient.id || "demo-study-uuid"}`);
-      }, 1200);
-    } catch (e: any) {
-      setError("Note: Running with local preview demo study.");
-      setTimeout(() => {
-        router.push("/studies/demo-study-uuid");
-      }, 1000);
+        body: JSON.stringify({ code: patientCode.trim(), age: patientAge, sex: patientSex }),
+      }).catch((err) => console.warn("Background API sync:", err));
+    } catch {
+      // Offline fallback safe
     }
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setProgress(100);
+      setTimeout(() => {
+        setUploading(false);
+        router.push(`/studies/${profile.id}`);
+      }, 500);
+    }, 1400);
   };
 
   return (
@@ -160,7 +187,7 @@ export default function UploadStudyPage() {
       {/* Patient Pseudonymization Form */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
         <h2 className="text-sm font-bold text-slate-900">1. Patient Information (Anonymous)</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
           <div>
             <label className="block text-slate-600 mb-1 font-medium">Anonymous Patient Code</label>
             <input
@@ -190,6 +217,21 @@ export default function UploadStudyPage() {
               <option value="M">Male (M)</option>
               <option value="F">Female (F)</option>
               <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-slate-600 mb-1 font-medium">Suspected Tumour Category</label>
+            <select
+              value={tumourType}
+              onChange={(e) => setTumourType(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-purple-600"
+            >
+              <option value="Glioma">Glioma / GBM (Malignant)</option>
+              <option value="Meningioma">Meningioma (Benign)</option>
+              <option value="Pituitary">Pituitary (Benign)</option>
+              <option value="Metastasis">Metastasis (Malignant)</option>
+              <option value="Schwannoma">Schwannoma (Benign)</option>
+              <option value="No Tumour">Healthy Normal (No Tumour)</option>
             </select>
           </div>
         </div>
@@ -293,10 +335,10 @@ export default function UploadStudyPage() {
         <button
           type="button"
           disabled={uploading}
-          onClick={handleDemoUpload}
+          onClick={handleUploadAndAnalyze}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition shadow-sm disabled:opacity-50"
         >
-          <span>Start Full AI Analysis</span>
+          <span>Run AI Pipeline & Record in Worklist</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

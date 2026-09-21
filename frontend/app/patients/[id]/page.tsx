@@ -1,47 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { User, TrendingUp, ChevronRight, ArrowUpRight } from "lucide-react";
+import { User, TrendingUp, ChevronRight, ArrowUpRight, BarChart3 } from "lucide-react";
+import { getPatientProfile, PatientProfile } from "@/lib/patientCatalog";
 
 export default function PatientTimelinePage() {
   const params = useParams();
-  const patientId = (params.id as string) || "PT-DEMO-01";
+  const patientId = (params.id as string) || "PT-70194";
 
-  // Longitudinal study timeline history
-  const timeline = [
-    {
-      study_id: "856c7e19-a1ae-4298-94f5-d4ad0bdc6072",
-      date: "2026-09-20",
-      scan_type: "Post-Treatment Follow-up #2",
-      wt_ml: 46.8,
-      tc_ml: 25.3,
-      et_ml: 16.1,
-      response: "Tumour Growth (+21%)",
-      is_progression: true,
-    },
-    {
-      study_id: "441b8c22-b0fe-4112-911d-e5cf01ad2381",
-      date: "2026-05-14",
-      scan_type: "Post-Treatment Follow-up #1",
-      wt_ml: 38.6,
-      tc_ml: 19.4,
-      et_ml: 11.2,
-      response: "Tumour Shrinkage (-29%)",
-      is_progression: false,
-    },
-    {
-      study_id: "119d2b99-a9fe-4411-921c-a1bd99cd1044",
-      date: "2026-01-10",
-      scan_type: "Initial Baseline Scan",
-      wt_ml: 54.2,
-      tc_ml: 32.1,
-      et_ml: 24.5,
-      response: "Initial Baseline",
-      is_progression: false,
-    },
-  ];
+  const [profile, setProfile] = useState<PatientProfile>(() => getPatientProfile(patientId));
+
+  useEffect(() => {
+    setProfile(getPatientProfile(patientId));
+  }, [patientId]);
+
+  const timeline = profile.timeline;
 
   return (
     <div className="flex-1 max-w-5xl mx-auto w-full p-6 space-y-6">
@@ -52,16 +27,34 @@ export default function PatientTimelinePage() {
             <User className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 font-mono">{patientId}</h1>
-            <p className="text-xs text-slate-500">
-              Male, 54 yrs • Glioblastoma Protocol (Malignant Brain Tumour)
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-slate-900 font-mono">{profile.code}</h1>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                  profile.isMalignant
+                    ? "bg-red-100 border-red-300 text-red-800"
+                    : "bg-emerald-100 border-emerald-300 text-emerald-800"
+                }`}
+              >
+                {profile.isMalignant ? "Malignant" : "Benign"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {profile.sex}, {profile.age} yrs • {profile.tumourType} Protocol ({profile.scenarioName})
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Link
-            href={`/studies/${timeline[0].study_id}`}
+            href={`/insights?studyId=${profile.id}`}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium text-xs transition shadow-xs"
+          >
+            <BarChart3 className="w-4 h-4 text-purple-600" />
+            <span>AI Insights</span>
+          </Link>
+          <Link
+            href={`/studies/${profile.id}`}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition shadow-sm"
           >
             <span>View Latest Scan</span>
@@ -77,7 +70,9 @@ export default function PatientTimelinePage() {
             <TrendingUp className="w-4 h-4 text-purple-600" />
             Tumour Size History Over Time (mL)
           </h2>
-          <span className="text-[11px] text-slate-500 font-mono">3 Scans on Record</span>
+          <span className="text-[11px] text-slate-500 font-mono">
+            {timeline.length} Scan{timeline.length === 1 ? "" : "s"} on Record
+          </span>
         </div>
 
         {/* Visual Trend Bars */}
@@ -95,17 +90,17 @@ export default function PatientTimelinePage() {
               <div className="w-full h-3.5 rounded-full bg-slate-100 border border-slate-200 flex overflow-hidden">
                 <div
                   className="h-full bg-blue-600"
-                  style={{ width: `${(scan.et_ml / 60) * 100}%` }}
+                  style={{ width: `${Math.min(100, (scan.et_ml / 60) * 100)}%` }}
                   title={`Active Growing Rim: ${scan.et_ml} mL`}
                 />
                 <div
                   className="h-full bg-red-600"
-                  style={{ width: `${((scan.tc_ml - scan.et_ml) / 60) * 100}%` }}
+                  style={{ width: `${Math.min(100, (Math.max(0, scan.tc_ml - scan.et_ml) / 60) * 100)}%` }}
                   title="Necrotic Dead Center"
                 />
                 <div
                   className="h-full bg-amber-500"
-                  style={{ width: `${((scan.wt_ml - scan.tc_ml) / 60) * 100}%` }}
+                  style={{ width: `${Math.min(100, (Math.max(0, scan.wt_ml - scan.tc_ml) / 60) * 100)}%` }}
                   title="Brain Swelling"
                 />
               </div>
