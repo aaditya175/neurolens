@@ -1748,3 +1748,16 @@ export function getPatientProfile(studyIdOrCode: string): PatientProfile {
   // 6. Default to classic primary glioma case
   return PATIENT_CATALOG["856c7e19-a1ae-4298-94f5-d4ad0bdc6072"];
 }
+
+/**
+ * Return all known patient / study IDs for static export generation.
+ */
+export function getAllPatientIds(): string[] {
+  const ids = new Set<string>();
+  Object.keys(PATIENT_CATALOG).forEach((k) => ids.add(k));
+  Object.values(PATIENT_CATALOG).forEach((p) => {
+    if (p.id) ids.add(p.id);
+    if (p.code) ids.add(p.code);
+  });
+  return Array.from(ids);
+}
