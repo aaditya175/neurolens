@@ -68,5 +68,12 @@
 - [x] **Phase 7 — Insights, hardening, docs**
   - [x] Cohort Insights view with 2D PCA scatter and Section 6.11 comparison table (`GET /insights/cohort`)
   - [x] Audit log interface & security review (`GET /audit-log`)
-  - [x] End-to-end integration and regression test coverage (24 passed, 1 skipped)
-  - [x] Production build verification (`npm run build`: 9 static and dynamic routes compiled with 0 errors)
+  - [x] End-to-end integration and regression test coverage (26 passed, 1 skipped)
+  - [x] Production build verification (`npm run build`: 10 static and dynamic routes compiled with 0 errors)
+
+- [x] **Phase 8 — UI/UX Simplification & Visual Redesign**
+  - [x] Clean white clinical color palette (`bg-white`), dark high-contrast typography (`text-slate-900`), and purple primary buttons (`bg-purple-600 hover:bg-purple-700 text-white font-medium`)
+  - [x] Colour-coded feedback system: Red for warnings, critical alerts, and malignant tumours; Green for benign tumours, passed checks, and sign-offs; Amber for caution and review notices
+  - [x] Clear **Benign (Non-Cancerous)** vs. **Malignant (Cancerous)** classification badges and plain-English definitions integrated throughout `ClassificationCard`, `WorklistPage`, `SimilarCasesGrid`, and `ReportEditorPage`
+  - [x] Dedicated Medical Guide & Glossary page (`/info`) explaining all clinical and AI concepts in simple, accessible language (MRI sequences, sub-regions, measurements, uncertainty, habitats)
+  - [x] Complete jargon simplification across all 10 views (Home, Worklist, Upload, Workspace, Compare, Reports, Insights, Admin, Login, Timeline)
