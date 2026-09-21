@@ -24,27 +24,34 @@
   - [x] `FAKE_MODEL=true` pipeline returning 100% compliant Section 7.1 AnalysisResult JSON
   - [x] End-to-end upload and analysis verification test suite green
 
-- [ ] **Phase 2 — Viewer + workspace UI (with fake results)**
-  - [ ] Multi-Planar Reconstruction (MPR) viewer
-  - [ ] Sequence switcher (T1, T1ce, T2, FLAIR)
-  - [ ] Segmentation overlay with opacity & region toggles
-  - [ ] Right-hand panels: Summary, Measurements, Explain, Similar Cases
-  - [ ] Triage Worklist and Upload UI
+- [x] **Phase 2 — Viewer + workspace UI (with fake results)**
+  - [x] Multi-Planar Reconstruction (MPR) 3-plane viewer canvas (Axial, Coronal, Sagittal) with crosshair sync, window/level, and slice scrolling
+  - [x] Sequence switcher (T1, T1ce, T2, FLAIR)
+  - [x] Segmentation overlays with opacity slider & sub-region toggles (NCR, ED, ET)
+  - [x] Research overlays: Uncertainty entropy heatmap, Grad-CAM, Intra-tumour Habitats
+  - [x] Right-hand panels: Summary (Dual classification), Measurements (volumetric & RANO diameters), Explainability (Radiomics feature importance & Decision tree rules), Similar Cases (KNN retrieval)
+  - [x] Interactive Mask Editor Toolbar (Brush, Eraser, Region Grow, Undo/Redo, Revert to AI, Save Mask v2)
+  - [x] Triage Worklist (`/worklist`) with urgency score ranking and clinical badges
+  - [x] Patient longitudinal timeline (`/patients/[id]`) with volumetric trends
+  - [x] Study comparison page (`/studies/[id]/compare`) with RANO response criteria
+  - [x] Structured report editor (`/reports/[id]`) with status workflow (`draft` -> `reviewed` -> `signed`)
+  - [x] Cohort Insights page (`/insights`) with 2D PCA scatter and Section 6.11 comparison table
+  - [x] Admin page (`/admin`) with compliance audit trail, user management, and model catalog
 
-- [ ] **Phase 3 — Real preprocessing + baseline segmentation + measurements**
-  - [ ] Preprocessing pipeline (reorient, resample, N4, normalisation, brain masking)
-  - [ ] Baseline 3D U-Net model & sliding-window inference
-  - [ ] Measurements module (volumes, diameters, RANO product, location, midline shift)
-  - [ ] DBSCAN lesion clustering (multifocality & noise suppression)
+- [x] **Phase 3 — Real preprocessing + baseline segmentation + measurements**
+  - [x] Preprocessing pipeline (reorient, resample, N4, normalisation, brain masking)
+  - [x] Baseline 3D U-Net model & sliding-window inference
+  - [x] Measurements module (volumes, diameters, RANO product, location, midline shift)
+  - [x] DBSCAN lesion clustering (multifocality & noise suppression)
 
-- [ ] **Phase 4 — Classical ML module + classification**
-  - [ ] Radiomics feature extraction
-  - [ ] PCA dimensionality reduction
-  - [ ] Classical classifiers: SVM (RBF/linear), KNN, Random Forest, AdaBoost, Gradient Boosting, Naive Bayes, Logistic Regression
-  - [ ] Intra-tumour habitat clustering (K-Means & GMM with EM)
-  - [ ] OOD / QC anomaly detector (One-Class SVM / Isolation Forest)
-  - [ ] KNN similar-case retrieval index
-  - [ ] Benchmarking comparison table in `docs/ML_REPORT.md`
+- [x] **Phase 4 — Classical ML module + classification**
+  - [x] Radiomics feature extraction
+  - [x] PCA dimensionality reduction
+  - [x] Classical classifiers: SVM (RBF/linear), KNN, Random Forest, AdaBoost, Gradient Boosting, Naive Bayes, Logistic Regression, Stacking Ensemble
+  - [x] Intra-tumour habitat clustering (K-Means & GMM with EM)
+  - [x] OOD / QC anomaly detector (One-Class SVM / Isolation Forest)
+  - [x] KNN similar-case retrieval index
+  - [x] Benchmarking comparison table and honest evaluation in `docs/ML_REPORT.md`
 
 - [ ] **Phase 5 — Strong segmentation model + uncertainty + explainability**
   - [ ] MONAI SwinUNETR / DynUNET training pipeline
