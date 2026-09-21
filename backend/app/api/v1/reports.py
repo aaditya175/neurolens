@@ -81,6 +81,22 @@ async def create_or_generate_report(
     await db.commit()
     await db.refresh(report)
 
+    # Sync to MongoDB Document Store
+    from backend.app.services.mongo_service import mongo_service
+    await mongo_service.save_report({
+        "id": report.id,
+        "study_id": report.study_id,
+        "status": report.status,
+        "content": report.content,
+        "created_by": current_user.id,
+    })
+    await mongo_service.log_activity(
+        action="report_generated",
+        user_id=current_user.id,
+        entity_type="report",
+        entity_id=report.id,
+    )
+
     return {"id": report.id, "study_id": study.id, "status": report.status, "content": report.content}
 
 
@@ -121,6 +137,23 @@ async def update_report(
 
     await db.commit()
     await db.refresh(report)
+
+    # Sync updated report to MongoDB
+    from backend.app.services.mongo_service import mongo_service
+    await mongo_service.save_report({
+        "id": report.id,
+        "study_id": report.study_id,
+        "status": report.status,
+        "content": report.content,
+        "signed_at": report.signed_at.isoformat() if report.signed_at else None,
+    })
+    await mongo_service.log_activity(
+        action=f"report_status_{new_status}",
+        user_id=current_user.id,
+        entity_type="report",
+        entity_id=report.id,
+        metadata={"status": new_status},
+    )
 
     return {"id": report.id, "status": report.status, "content": report.content}
 

@@ -72,6 +72,23 @@ async def create_study_comparison(
     await db.commit()
     await db.refresh(comparison)
 
+    # Sync to MongoDB Document Store
+    from backend.app.services.mongo_service import mongo_service
+    await mongo_service.save_comparison({
+        "id": comparison.id,
+        "patient_id": id,
+        "baseline_study_id": baseline_id,
+        "followup_study_id": followup_id,
+        "result": comp_result.model_dump(),
+    })
+    await mongo_service.log_activity(
+        action="longitudinal_comparison_created",
+        user_id=current_user.id,
+        entity_type="comparison",
+        entity_id=comparison.id,
+        metadata={"rano_suggestion": comp_result.rano_suggestion},
+    )
+
     return comparison.result
 
 

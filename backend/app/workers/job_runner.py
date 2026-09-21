@@ -73,6 +73,16 @@ async def execute_analysis_job(job_id: str):
                 )
                 session.add(new_analysis)
 
+            # Sync to MongoDB Document Store
+            from backend.app.services.mongo_service import mongo_service
+            await mongo_service.save_analysis(study.id, result_dict)
+            await mongo_service.log_activity(
+                action="analysis_completed",
+                entity_type="study",
+                entity_id=study.id,
+                metadata={"tumour_type": result_dict.get("classification", {}).get("ensemble", {}).get("label")},
+            )
+
             # 5. Mark Done
             job.status = "done"
             job.progress = 100

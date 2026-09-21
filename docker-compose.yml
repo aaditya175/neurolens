@@ -31,6 +31,15 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:6.0
+    container_name: neurolens_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
   api:
     build:
       context: .
@@ -43,6 +52,8 @@ services:
       - DATABASE_URL=postgresql+asyncpg://neurolens:neurolens_dev_secret@postgres:5432/neurolens_db
       - REDIS_URL=redis://redis:6379/0
       - STORAGE_DIR=/data
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DB_NAME=neurolens_db
     volumes:
       - ./backend:/app/backend
       - ./ml:/app/ml
@@ -94,3 +105,5 @@ services:
 volumes:
   postgres_data:
   storage_data:
+  mongodb_data:
+

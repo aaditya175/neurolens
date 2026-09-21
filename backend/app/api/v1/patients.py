@@ -35,6 +35,24 @@ async def create_patient(
     db.add(patient)
     await db.commit()
     await db.refresh(patient)
+
+    # Sync to MongoDB
+    from backend.app.services.mongo_service import mongo_service
+    await mongo_service.save_patient({
+        "id": patient.id,
+        "code": patient.code,
+        "age": patient.age,
+        "sex": patient.sex,
+        "created_by": current_user.id,
+        "created_at": patient.created_at.isoformat(),
+    })
+    await mongo_service.log_activity(
+        action="create_patient",
+        user_id=current_user.id,
+        entity_type="patient",
+        entity_id=patient.id,
+    )
+
     return patient
 
 

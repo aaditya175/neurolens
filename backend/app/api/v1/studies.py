@@ -88,6 +88,25 @@ async def upload_study(
     await db.commit()
     await db.refresh(study)
 
+    # Sync to MongoDB Document Store
+    from backend.app.services.mongo_service import mongo_service
+    await mongo_service.save_study({
+        "id": study.id,
+        "patient_id": study.patient_id,
+        "status": study.status,
+        "sequences_present": study.sequences_present,
+        "storage_path": study.storage_path,
+        "created_by": current_user.id,
+        "created_at": study.created_at.isoformat(),
+    })
+    await mongo_service.log_activity(
+        action="study_uploaded",
+        user_id=current_user.id,
+        entity_type="study",
+        entity_id=study.id,
+        metadata={"sequences": detected_sequences},
+    )
+
     return StudyUploadResponse(
         study_id=study.id,
         patient_id=patient.id,
@@ -319,6 +338,23 @@ async def update_study_mask(
         db.add(analysis)
 
     await db.commit()
+
+    # Sync mask revision to MongoDB
+    from backend.app.services.mongo_service import mongo_service
+    await mongo_service.save_mask_revision({
+        "study_id": id,
+        "mask_version": 2,
+        "source": "doctor",
+        "created_by": current_user.id,
+        "path": str(v2_path),
+    })
+    await mongo_service.log_activity(
+        action="mask_revised_doctor",
+        user_id=current_user.id,
+        entity_type="mask",
+        entity_id=id,
+        metadata={"version": 2},
+    )
 
     return {
         "status": "success",

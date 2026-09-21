@@ -36,6 +36,11 @@ try:
         STORAGE_DIR: str = "./data"
         MAX_UPLOAD_SIZE_MB: int = 500
         
+        # MongoDB
+        MONGODB_URL: str = "mongodb://localhost:27017"
+        MONGODB_DB_NAME: str = "neurolens_db"
+        MONGODB_ENABLED: bool = True
+        
         # ML Execution
         FAKE_MODEL: bool = True
         DEVICE: str = "cpu"
@@ -79,6 +84,10 @@ except ImportError:
         
         STORAGE_DIR: str = os.getenv("STORAGE_DIR", "./data")
         MAX_UPLOAD_SIZE_MB: int = int(os.getenv("MAX_UPLOAD_SIZE_MB", "500"))
+        
+        MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+        MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "neurolens_db")
+        MONGODB_ENABLED: bool = os.getenv("MONGODB_ENABLED", "true").lower() == "true"
         
         FAKE_MODEL: bool = os.getenv("FAKE_MODEL", "true").lower() == "true"
         DEVICE: str = os.getenv("DEVICE", "cpu")

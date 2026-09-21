@@ -14,11 +14,18 @@ from backend.app.core.database import init_db
 from backend.app.api.v1 import api_router
 
 
+from backend.app.core.mongodb import mongo_manager
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables on startup
+    # Initialize SQL database tables on startup
     await init_db()
+    # Initialize MongoDB connection
+    await mongo_manager.connect()
     yield
+    # Close MongoDB connection on shutdown
+    await mongo_manager.close()
 
 
 app = FastAPI(
