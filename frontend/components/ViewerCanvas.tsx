@@ -202,20 +202,20 @@ export function ViewerCanvas({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-clinical-bg border border-slate-800 rounded-xl overflow-hidden select-none">
+    <div className="flex-1 flex flex-col h-full bg-slate-900 border border-slate-200 rounded-xl overflow-hidden select-none shadow-sm">
       {/* Viewer Top Utility Bar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-clinical-surface border-b border-slate-800 text-xs">
+      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200 text-xs text-slate-700">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-cyan-400 font-bold uppercase tracking-wider">
-            MPR 3-Plane Engine
+          <span className="font-bold text-slate-900">
+            3D Brain Viewer
           </span>
-          <span className="text-slate-500">•</span>
-          <span className="font-mono text-slate-300 uppercase">
-            Seq: <strong className="text-cyan-300">{currentSequence}</strong>
+          <span className="text-slate-300">•</span>
+          <span className="font-medium text-slate-600 uppercase">
+            Viewing: <strong className="text-purple-700 font-bold">{currentSequence}</strong>
           </span>
-          <span className="text-slate-500">•</span>
-          <span className="font-mono text-slate-400">
-            [{coords.x}, {coords.y}, {coords.z}]
+          <span className="text-slate-300">•</span>
+          <span className="font-mono text-slate-500 text-[11px]">
+            Slice Pos: [{coords.x}, {coords.y}, {coords.z}]
           </span>
         </div>
 
@@ -223,17 +223,18 @@ export function ViewerCanvas({
           <button
             type="button"
             onClick={() => setShowCrosshairs(!showCrosshairs)}
-            className={`p-1.5 rounded transition ${
-              showCrosshairs ? "bg-cyan-950 text-cyan-400 border border-cyan-800" : "text-slate-400 hover:bg-slate-800"
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 ${
+              showCrosshairs ? "bg-purple-600 text-white shadow-xs" : "text-slate-600 hover:bg-slate-100"
             }`}
             title="Toggle Crosshairs"
           >
             <Crosshair className="w-3.5 h-3.5" />
+            <span>Crosshair</span>
           </button>
           <button
             type="button"
             onClick={() => setZoom((z) => Math.min(2.5, z + 0.15))}
-            className="p-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             title="Zoom In"
           >
             <ZoomIn className="w-3.5 h-3.5" />
@@ -241,7 +242,7 @@ export function ViewerCanvas({
           <button
             type="button"
             onClick={() => setZoom((z) => Math.max(0.7, z - 0.15))}
-            className="p-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             title="Zoom Out"
           >
             <ZoomOut className="w-3.5 h-3.5" />
@@ -252,7 +253,7 @@ export function ViewerCanvas({
               setZoom(1.0);
               setWindowLevel({ window: 256, level: 128 });
             }}
-            className="p-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             title="Reset View"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -262,7 +263,7 @@ export function ViewerCanvas({
 
       {/* Viewport Canvas Grid */}
       <div
-        className={`flex-1 p-2 grid gap-2 ${
+        className={`flex-1 p-2 grid gap-2 bg-slate-950 ${
           maximizedPlane === "mpr"
             ? "grid-cols-1 md:grid-cols-3"
             : "grid-cols-1"
@@ -270,14 +271,14 @@ export function ViewerCanvas({
       >
         {/* Axial Viewport */}
         {(maximizedPlane === "mpr" || maximizedPlane === "axial") && (
-          <div className="relative flex flex-col rounded-lg bg-black border border-slate-800/80 overflow-hidden group">
-            <div className="absolute top-2 left-2 z-10 flex items-center gap-2 bg-slate-900/80 px-2 py-0.5 rounded text-[11px] font-mono text-cyan-400">
-              <span>Axial (Z: {coords.z}/95)</span>
+          <div className="relative flex flex-col rounded-lg bg-black border border-slate-800 overflow-hidden group">
+            <div className="absolute top-2 left-2 z-10 flex items-center gap-2 bg-white/90 backdrop-blur px-2.5 py-0.5 rounded-md text-[11px] font-bold text-slate-900 shadow-xs">
+              <span>Top-Down (Axial Slice: {coords.z}/95)</span>
             </div>
             <button
               type="button"
               onClick={() => setMaximizedPlane(maximizedPlane === "axial" ? "mpr" : "axial")}
-              className="absolute top-2 right-2 z-10 p-1 rounded bg-slate-900/80 text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition"
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-white/90 text-slate-700 hover:text-slate-900 opacity-0 group-hover:opacity-100 transition shadow-xs"
             >
               {maximizedPlane === "axial" ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
@@ -296,7 +297,7 @@ export function ViewerCanvas({
                 max="95"
                 value={coords.z}
                 onChange={(e) => setCoords((c) => ({ ...c, z: parseInt(e.target.value) }))}
-                className="w-full h-1 accent-cyan-400 bg-slate-800/80 rounded cursor-pointer"
+                className="w-full h-1.5 accent-purple-500 bg-slate-800 rounded cursor-pointer"
               />
             </div>
           </div>
@@ -304,14 +305,14 @@ export function ViewerCanvas({
 
         {/* Coronal Viewport */}
         {(maximizedPlane === "mpr" || maximizedPlane === "coronal") && (
-          <div className="relative flex flex-col rounded-lg bg-black border border-slate-800/80 overflow-hidden group">
-            <div className="absolute top-2 left-2 z-10 flex items-center gap-2 bg-slate-900/80 px-2 py-0.5 rounded text-[11px] font-mono text-amber-400">
-              <span>Coronal (Y: {coords.y}/95)</span>
+          <div className="relative flex flex-col rounded-lg bg-black border border-slate-800 overflow-hidden group">
+            <div className="absolute top-2 left-2 z-10 flex items-center gap-2 bg-white/90 backdrop-blur px-2.5 py-0.5 rounded-md text-[11px] font-bold text-slate-900 shadow-xs">
+              <span>Front-Back (Coronal Slice: {coords.y}/95)</span>
             </div>
             <button
               type="button"
               onClick={() => setMaximizedPlane(maximizedPlane === "coronal" ? "mpr" : "coronal")}
-              className="absolute top-2 right-2 z-10 p-1 rounded bg-slate-900/80 text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition"
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-white/90 text-slate-700 hover:text-slate-900 opacity-0 group-hover:opacity-100 transition shadow-xs"
             >
               {maximizedPlane === "coronal" ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
@@ -330,7 +331,7 @@ export function ViewerCanvas({
                 max="95"
                 value={coords.y}
                 onChange={(e) => setCoords((c) => ({ ...c, y: parseInt(e.target.value) }))}
-                className="w-full h-1 accent-amber-400 bg-slate-800/80 rounded cursor-pointer"
+                className="w-full h-1.5 accent-purple-500 bg-slate-800 rounded cursor-pointer"
               />
             </div>
           </div>
@@ -338,14 +339,14 @@ export function ViewerCanvas({
 
         {/* Sagittal Viewport */}
         {(maximizedPlane === "mpr" || maximizedPlane === "sagittal") && (
-          <div className="relative flex flex-col rounded-lg bg-black border border-slate-800/80 overflow-hidden group">
-            <div className="absolute top-2 left-2 z-10 flex items-center gap-2 bg-slate-900/80 px-2 py-0.5 rounded text-[11px] font-mono text-purple-400">
-              <span>Sagittal (X: {coords.x}/95)</span>
+          <div className="relative flex flex-col rounded-lg bg-black border border-slate-800 overflow-hidden group">
+            <div className="absolute top-2 left-2 z-10 flex items-center gap-2 bg-white/90 backdrop-blur px-2.5 py-0.5 rounded-md text-[11px] font-bold text-slate-900 shadow-xs">
+              <span>Side-View (Sagittal Slice: {coords.x}/95)</span>
             </div>
             <button
               type="button"
               onClick={() => setMaximizedPlane(maximizedPlane === "sagittal" ? "mpr" : "sagittal")}
-              className="absolute top-2 right-2 z-10 p-1 rounded bg-slate-900/80 text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition"
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-white/90 text-slate-700 hover:text-slate-900 opacity-0 group-hover:opacity-100 transition shadow-xs"
             >
               {maximizedPlane === "sagittal" ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
@@ -364,7 +365,7 @@ export function ViewerCanvas({
                 max="95"
                 value={coords.x}
                 onChange={(e) => setCoords((c) => ({ ...c, x: parseInt(e.target.value) }))}
-                className="w-full h-1 accent-purple-400 bg-slate-800/80 rounded cursor-pointer"
+                className="w-full h-1.5 accent-purple-500 bg-slate-800 rounded cursor-pointer"
               />
             </div>
           </div>
@@ -372,19 +373,20 @@ export function ViewerCanvas({
       </div>
 
       {/* Viewer Bottom Window/Level Control Footer */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-clinical-surface border-t border-slate-800 text-[11px] text-slate-400 font-mono">
+      <div className="flex items-center justify-between px-4 py-2 bg-white border-t border-slate-200 text-xs text-slate-600 font-medium">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <Sun className="w-3.5 h-3.5 text-amber-400" />
-            <span>W: {windowLevel.window}</span>
-            <span>L: {windowLevel.level}</span>
+            <Sun className="w-4 h-4 text-amber-500" />
+            <span>Contrast: {windowLevel.window}</span>
+            <span>•</span>
+            <span>Brightness: {windowLevel.level}</span>
           </div>
           <span>Zoom: {(zoom * 100).toFixed(0)}%</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-500">
-          <span>Click to sync crosshair</span>
+        <div className="flex items-center gap-2 text-slate-500 text-[11px]">
+          <span>Click on brain to move crosshair</span>
           <span>•</span>
-          <span>Hover slider to scroll slices</span>
+          <span>Hover slider to scroll through slices</span>
         </div>
       </div>
     </div>

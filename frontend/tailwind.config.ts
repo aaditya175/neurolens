@@ -28,21 +28,25 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         
-        // NeuroLens Clinical Palette
+        // NeuroLens Clean Clinical Light Palette
         clinical: {
-          bg: "#0B0F19",
-          surface: "#111827",
-          panel: "#1F2937",
-          border: "#374151",
-          highlight: "#3B82F6",
+          bg: "#FFFFFF",
+          surface: "#FFFFFF",
+          panel: "#F8FAFC",
+          card: "#FFFFFF",
+          border: "#E2E8F0",
+          borderDark: "#CBD5E1",
+          highlight: "#9333EA", // Purple primary
+          textDark: "#0F172A",
+          textMuted: "#64748B",
         },
-        // Tumour Sub-Regions (Consistent Everywhere)
+        // Tumour Sub-Regions (Consistent standard overlays)
         tumour: {
-          ncr: "#EF4444", // Red: Necrotic / Non-enhancing core
-          ed: "#EAB308",  // Yellow-Green: Peritumoural edema
-          et: "#06B6D4",  // Cyan-Blue: Enhancing tumour
-          wt: "#8B5CF6",  // Purple: Whole tumour composite
-          tc: "#F97316",  // Orange: Tumour core composite
+          ncr: "#DC2626", // Red: Necrotic core (Dead tissue)
+          ed: "#D97706",  // Amber: Edema (Brain swelling)
+          et: "#0284C7",  // Blue: Enhancing active tumour
+          wt: "#9333EA",  // Purple: Whole tumour
+          tc: "#EA580C",  // Orange: Tumour core
         },
       },
     },

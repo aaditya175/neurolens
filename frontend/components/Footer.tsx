@@ -3,18 +3,18 @@ import { AlertCircle } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-slate-800 bg-clinical-surface/80 backdrop-blur py-3 px-6 text-xs text-slate-400 select-none">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-amber-400 font-medium">
-          <AlertCircle className="w-4 h-4 shrink-0 text-amber-500" />
+    <footer className="w-full border-t border-slate-200 bg-white py-3 px-6 text-xs text-slate-500 select-none shadow-xs">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-amber-800 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 text-[11px]">
+          <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
           <span>
-            <strong>Mandatory Disclaimer:</strong> NeuroLens is a research prototype for decision support only. It is not a medical device and must not be used for clinical diagnosis or treatment decisions.
+            <strong>Important Notice:</strong> NeuroLens is a clinical decision-support research prototype. It is not an FDA/CE-cleared medical device and must not replace professional clinical diagnosis or doctor decisions.
           </span>
         </div>
-        <div className="flex items-center gap-4 text-slate-500 shrink-0">
-          <span>v0.1.0-alpha</span>
+        <div className="flex items-center gap-4 text-slate-400 shrink-0 text-[11px]">
+          <span>NeuroLens v0.1.0</span>
           <span>•</span>
-          <span>MONAI + Mumbai Univ ML Syllabus</span>
+          <span>Mumbai University ML Syllabus</span>
         </div>
       </div>
     </footer>

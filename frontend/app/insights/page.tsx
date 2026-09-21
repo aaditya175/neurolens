@@ -1,141 +1,151 @@
 "use client";
 
 import React, { useState } from "react";
-import { BarChart3, ScatterChart, GitFork, Award, Brain, Info } from "lucide-react";
+import { BarChart3, GitFork, BookOpen } from "lucide-react";
+import Link from "next/link";
 
 export default function InsightsPage() {
   const [activeTab, setActiveTab] = useState<"pca" | "benchmarks" | "habitats">("pca");
 
   // Comparison table from Section 6.11 (Mumbai University ML Syllabus)
   const benchmarkModels = [
-    { name: "Support Vector Machine (RBF Kernel)", type: "Classical", acc: "88.4%", f1: "0.87", auroc: "0.94", ece: "0.042", role: "Primary Classical Classifier" },
-    { name: "Random Forest (Bagging)", type: "Ensemble", acc: "87.1%", f1: "0.86", auroc: "0.93", ece: "0.051", role: "Feature Importance Engine" },
-    { name: "AdaBoost Classifier", type: "Ensemble", acc: "84.6%", f1: "0.83", auroc: "0.90", ece: "0.068", role: "Boosting Comparison" },
-    { name: "Gradient Boosting", type: "Ensemble", acc: "86.8%", f1: "0.85", auroc: "0.92", ece: "0.054", role: "Nonlinear Boosting" },
-    { name: "Stacking (LR Meta-Learner)", type: "Hybrid", acc: "89.2%", f1: "0.88", auroc: "0.95", ece: "0.038", role: "Meta-learner over SVM+RF+CNN" },
-    { name: "K-Nearest Neighbours (k=5)", type: "Instance", acc: "82.3%", f1: "0.81", auroc: "0.88", ece: "0.075", role: "Similar Case Retrieval" },
-    { name: "Gaussian Naive Bayes", type: "Probabilistic", acc: "79.1%", f1: "0.78", auroc: "0.86", ece: "0.092", role: "Fast Classical Baseline" },
-    { name: "Decision Tree", type: "Tree", acc: "80.5%", f1: "0.79", auroc: "0.84", ece: "0.088", role: "Interpretable Triage Rules" },
-    { name: "Logistic Regression", type: "Linear", acc: "83.0%", f1: "0.82", auroc: "0.89", ece: "0.061", role: "Calibrated Baseline" },
-    { name: "Deep 3D CNN (EfficientNet)", type: "Deep Learning", acc: "91.5%", f1: "0.91", auroc: "0.97", ece: "0.045", role: "Primary Deep Feature Extractor" },
-    { name: "Ensemble (Deep CNN + Classical SVM)", type: "Consensus", acc: "93.1%", f1: "0.93", auroc: "0.98", ece: "0.029", role: "Final Clinical Recommendation Head" },
+    { name: "Support Vector Machine (RBF)", type: "Machine Learning", acc: "88.4%", f1: "0.87", auroc: "0.94", role: "Texture & Shape Classifier" },
+    { name: "Random Forest", type: "Ensemble Trees", acc: "87.1%", f1: "0.86", auroc: "0.93", role: "Identifies Key Scan Features" },
+    { name: "AdaBoost", type: "Boosting Ensemble", acc: "84.6%", f1: "0.83", auroc: "0.90", role: "Adaptive Weighting Model" },
+    { name: "Gradient Boosting", type: "Boosting Ensemble", acc: "86.8%", f1: "0.85", auroc: "0.92", role: "Non-linear Boundary Learner" },
+    { name: "Stacking Meta-Learner", type: "Hybrid Stacking", acc: "89.2%", f1: "0.88", auroc: "0.95", role: "Combines Multiple Classifiers" },
+    { name: "K-Nearest Neighbours (k=5)", type: "Similarity Matching", acc: "82.3%", f1: "0.81", auroc: "0.88", role: "Finds Similar Historical Scans" },
+    { name: "Naive Bayes", type: "Probability Baseline", acc: "79.1%", f1: "0.78", auroc: "0.86", role: "Fast Probabilistic Check" },
+    { name: "Decision Tree", type: "Rule Based", acc: "80.5%", f1: "0.79", auroc: "0.84", role: "Interpretable Urgency Rules" },
+    { name: "Logistic Regression", type: "Linear Model", acc: "83.0%", f1: "0.82", auroc: "0.89", role: "Calibrated Baseline" },
+    { name: "Deep 3D CNN (EfficientNet)", type: "Deep Learning", acc: "91.5%", f1: "0.91", auroc: "0.97", role: "Visual Pattern Recognition" },
+    { name: "Dual Ensemble (Deep CNN + SVM)", type: "Combined Consensus", acc: "93.1%", f1: "0.93", auroc: "0.98", role: "Final AI Recommendation Head" },
   ];
 
   return (
     <div className="flex-1 max-w-7xl mx-auto w-full p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-purple-400" />
-          Cohort Insights & ML Benchmarking
-        </h1>
-        <p className="text-xs text-slate-400">
-          Mumbai University ML Syllabus models evaluated on identical radiomics features with patient-level stratification.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-purple-600" />
+            AI Insights & Accuracy Comparison
+          </h1>
+          <p className="text-xs text-slate-500">
+            Evaluating machine learning and deep learning models on brain tumour MRI data (Mumbai University ML Syllabus).
+          </p>
+        </div>
+
+        <Link
+          href="/info"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium text-xs transition shadow-xs w-fit"
+        >
+          <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+          <span>Guide to Terms</span>
+        </Link>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 text-xs">
+      <div className="flex border-b border-slate-200 text-xs">
         <button
           type="button"
           onClick={() => setActiveTab("pca")}
-          className={`px-4 py-2 font-medium border-b-2 transition ${
+          className={`px-4 py-2 font-bold border-b-2 transition ${
             activeTab === "pca"
-              ? "border-purple-400 text-purple-300 bg-clinical-surface"
-              : "border-transparent text-slate-400 hover:text-white"
+              ? "border-purple-600 text-purple-700 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
-          2D PCA Cohort Space
+          2D Tumour Comparison Map (PCA)
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("benchmarks")}
-          className={`px-4 py-2 font-medium border-b-2 transition ${
+          className={`px-4 py-2 font-bold border-b-2 transition ${
             activeTab === "benchmarks"
-              ? "border-purple-400 text-purple-300 bg-clinical-surface"
-              : "border-transparent text-slate-400 hover:text-white"
+              ? "border-purple-600 text-purple-700 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
-          Model Comparison Table (Section 6.11)
+          AI Model Comparison Table
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("habitats")}
-          className={`px-4 py-2 font-medium border-b-2 transition ${
+          className={`px-4 py-2 font-bold border-b-2 transition ${
             activeTab === "habitats"
-              ? "border-purple-400 text-purple-300 bg-clinical-surface"
-              : "border-transparent text-slate-400 hover:text-white"
+              ? "border-purple-600 text-purple-700 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
-          Intra-Tumour Habitats (K-Means / GMM)
+          Tumour Micro-Environments
         </button>
       </div>
 
       {/* Tab 1: PCA Scatter */}
       {activeTab === "pca" && (
-        <div className="rounded-xl border border-slate-800 bg-clinical-surface p-6 space-y-4">
-          <div className="flex justify-between items-center text-xs">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
+          <div className="flex justify-between items-center text-xs flex-wrap gap-2">
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">
-                Principal Component Analysis (95% Variance Retention)
+              <h2 className="text-sm font-bold text-slate-900">
+                Where Does This Patient's Tumour Sit? (2D Texture & Shape Map)
               </h2>
-              <p className="text-slate-400 text-[11px]">
-                Dimensionality reduction projecting 107 Pyradiomics texture & shape features into 2D clinical space.
+              <p className="text-slate-500 text-[11px]">
+                Reduces 107 complex 3D shape and texture features into an intuitive 2D map. Similar tumours cluster together.
               </p>
             </div>
             <div className="flex items-center gap-3 text-[11px]">
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                <span>Glioma</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
+                <span className="text-slate-700">Glioma (Malignant)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                <span>Meningioma</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                <span className="text-slate-700">Meningioma (Benign)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                <span>Metastasis</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                <span className="text-slate-700">Metastasis (Malignant)</span>
               </div>
-              <div className="flex items-center gap-1.5 font-bold text-white">
-                <span className="w-3 h-3 rounded-full bg-purple-500 animate-ping" />
-                <span>Current Case</span>
+              <div className="flex items-center gap-1.5 font-bold text-purple-700">
+                <span className="w-3 h-3 rounded-full bg-purple-600 animate-ping" />
+                <span>Current Patient</span>
               </div>
             </div>
           </div>
 
-          {/* SVG PCA Visualization */}
-          <div className="relative h-80 w-full rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden">
+          {/* SVG PCA Visualization (Light Theme) */}
+          <div className="relative h-80 w-full rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden">
             {/* Grid Lines */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:40px_40px] opacity-30" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:40px_40px]" />
             
-            {/* Simulated PCA Cohort Points */}
             <svg className="w-full h-full p-8" viewBox="0 0 600 300">
               {/* Glioma cluster (left/mid) */}
               {[
                 [140, 90], [160, 110], [180, 85], [195, 140], [210, 100], [230, 130],
                 [170, 150], [150, 170], [220, 160], [240, 110], [200, 120]
               ].map(([x, y], i) => (
-                <circle key={`g-${i}`} cx={x} cy={y} r={5} fill="#06B6D4" opacity={0.7} />
+                <circle key={`g-${i}`} cx={x} cy={y} r={6} fill="#06B6D4" opacity={0.8} />
               ))}
 
               {/* Meningioma cluster (top right) */}
               {[
                 [420, 60], [450, 80], [430, 100], [470, 70], [460, 110], [490, 85]
               ].map(([x, y], i) => (
-                <circle key={`m-${i}`} cx={x} cy={y} r={5} fill="#EAB308" opacity={0.7} />
+                <circle key={`m-${i}`} cx={x} cy={y} r={6} fill="#EAB308" opacity={0.8} />
               ))}
 
               {/* Metastasis cluster (bottom right) */}
               {[
                 [380, 220], [410, 240], [430, 210], [390, 250], [450, 230]
               ].map(([x, y], i) => (
-                <circle key={`met-${i}`} cx={x} cy={y} r={5} fill="#EF4444" opacity={0.7} />
+                <circle key={`met-${i}`} cx={x} cy={y} r={6} fill="#EF4444" opacity={0.8} />
               ))}
 
               {/* Active Current Case Callout */}
-              <circle cx={205} cy={125} r={9} fill="#8B5CF6" className="animate-pulse" />
-              <circle cx={205} cy={125} r={16} fill="none" stroke="#8B5CF6" strokeWidth={2} opacity={0.5} />
-              <text x={225} y={130} fill="#C4B5FD" fontSize="12" fontWeight="bold" fontFamily="monospace">
-                Current Case (PT-70194)
+              <circle cx={205} cy={125} r={9} fill="#9333EA" className="animate-pulse" />
+              <circle cx={205} cy={125} r={16} fill="none" stroke="#9333EA" strokeWidth={2} opacity={0.5} />
+              <text x={225} y={130} fill="#6B21A8" fontSize="12" fontWeight="bold" fontFamily="monospace">
+                Current Case (PT-70194) — Inside Glioma Cluster
               </text>
             </svg>
           </div>
@@ -144,39 +154,44 @@ export default function InsightsPage() {
 
       {/* Tab 2: Benchmarking Table */}
       {activeTab === "benchmarks" && (
-        <div className="rounded-xl border border-slate-800 bg-clinical-surface overflow-hidden text-xs">
-          <div className="p-4 bg-slate-900/60 border-b border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-100">
-              Syllabus Classical ML & Deep Learning Benchmark Comparison
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden text-xs shadow-sm">
+          <div className="p-4 bg-slate-50 border-b border-slate-200">
+            <h2 className="text-sm font-bold text-slate-900">
+              Syllabus Machine Learning & Deep Learning Accuracy Scores
             </h2>
-            <p className="text-[11px] text-slate-400">
-              Strict patient-level 70/15/15 split. Metric definitions: Macro-F1 (unweighted class average), ROC-AUC (One-vs-Rest), ECE (Expected Calibration Error).
+            <p className="text-[11px] text-slate-500">
+              Evaluated on identical multi-sequence brain MRI radiomics. Notice how combining visual deep learning with classical texture analysis achieves the highest accuracy (93.1%).
             </p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/40 text-slate-400 text-[11px]">
-                  <th className="py-2.5 px-4 font-medium">Model Architecture</th>
-                  <th className="py-2.5 px-4 font-medium">Paradigm</th>
-                  <th className="py-2.5 px-4 font-medium text-right">Accuracy</th>
-                  <th className="py-2.5 px-4 font-medium text-right">Macro-F1</th>
-                  <th className="py-2.5 px-4 font-medium text-right">ROC-AUC</th>
-                  <th className="py-2.5 px-4 font-medium text-right">ECE</th>
-                  <th className="py-2.5 px-4 font-medium">Role in NeuroLens</th>
+                <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-600 text-[11px] font-semibold">
+                  <th className="py-2.5 px-4">Model Name</th>
+                  <th className="py-2.5 px-4">AI Type</th>
+                  <th className="py-2.5 px-4 text-right">Accuracy</th>
+                  <th className="py-2.5 px-4 text-right">F1-Score</th>
+                  <th className="py-2.5 px-4 text-right">ROC-AUC</th>
+                  <th className="py-2.5 px-4">Role in NeuroLens</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
+              <tbody className="divide-y divide-slate-100 font-mono">
                 {benchmarkModels.map((m, i) => (
-                  <tr key={i} className={`hover:bg-slate-800/30 ${m.name.includes("Ensemble (Deep") ? "bg-cyan-950/20 font-bold" : ""}`}>
-                    <td className="py-2.5 px-4 font-sans text-slate-200">{m.name}</td>
-                    <td className="py-2.5 px-4 font-sans text-slate-400 text-[11px]">{m.type}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-100">{m.acc}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-300">{m.f1}</td>
-                    <td className="py-2.5 px-4 text-right text-cyan-400">{m.auroc}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-400">{m.ece}</td>
-                    <td className="py-2.5 px-4 font-sans text-[11px] text-purple-300">{m.role}</td>
+                  <tr
+                    key={i}
+                    className={`hover:bg-slate-50 transition ${
+                      m.name.includes("Dual Ensemble")
+                        ? "bg-purple-50/60 font-bold"
+                        : ""
+                    }`}
+                  >
+                    <td className="py-2.5 px-4 font-sans font-bold text-slate-900">{m.name}</td>
+                    <td className="py-2.5 px-4 font-sans text-slate-600 text-[11px]">{m.type}</td>
+                    <td className="py-2.5 px-4 text-right font-bold text-slate-900">{m.acc}</td>
+                    <td className="py-2.5 px-4 text-right text-slate-700">{m.f1}</td>
+                    <td className="py-2.5 px-4 text-right text-purple-700 font-bold">{m.auroc}</td>
+                    <td className="py-2.5 px-4 font-sans text-[11px] text-slate-600">{m.role}</td>
                   </tr>
                 ))}
               </tbody>
@@ -187,26 +202,26 @@ export default function InsightsPage() {
 
       {/* Tab 3: Habitats */}
       {activeTab === "habitats" && (
-        <div className="rounded-xl border border-slate-800 bg-clinical-surface p-6 space-y-3 text-xs">
-          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <GitFork className="w-4 h-4 text-cyan-400" />
-            Intra-Tumour Habitat Clustering (K-Means vs GMM with EM)
+        <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm text-xs">
+          <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <GitFork className="w-4 h-4 text-purple-600" />
+            Tumour Micro-Environments (Intra-Tumour Zones)
           </h2>
-          <p className="text-slate-300 leading-relaxed text-xs">
-            Tumour micro-environments within the Whole Tumour (WT) envelope exhibit spatial heterogeneity (viable hypervascular periphery vs hypoxic central necrosis). Feature vectors consisting of multi-sequence voxel intensities (T1, T1ce, T2, FLAIR) are clustered:
+          <p className="text-slate-600 leading-relaxed text-xs">
+            Brain tumours are not uniform inside. The AI groups individual voxels into 3 distinct biological micro-environments based on blood flow and oxygen levels:
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <span className="font-bold text-red-400 text-xs block">Habitat #1: Hypoxic Core</span>
-              <p className="text-[11px] text-slate-400">Hypointense T1, hyperintense T2, negligible contrast uptake.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div className="p-4 rounded-xl border border-red-200 bg-red-50/50 space-y-1">
+              <span className="font-bold text-red-800 text-xs block">Zone 1: Oxygen-Starved Center</span>
+              <p className="text-[11px] text-slate-600">Cells in the center that died because they outgrew their blood supply (central necrosis).</p>
             </div>
-            <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <span className="font-bold text-cyan-400 text-xs block">Habitat #2: Active Angiogenic Rim</span>
-              <p className="text-[11px] text-slate-400">Marked T1ce hyperintensity, high cellular density.</p>
+            <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-1">
+              <span className="font-bold text-blue-800 text-xs block">Zone 2: Active Growing Edge</span>
+              <p className="text-[11px] text-slate-600">The aggressively multiplying outer rim with strong blood vessel development (enhancing rim).</p>
             </div>
-            <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <span className="font-bold text-yellow-400 text-xs block">Habitat #3: Infiltrative Edema</span>
-              <p className="text-[11px] text-slate-400">High FLAIR intensity, vasogenic interstitial water accumulation.</p>
+            <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-1">
+              <span className="font-bold text-amber-800 text-xs block">Zone 3: Infiltrative Swelling</span>
+              <p className="text-[11px] text-slate-600">Water accumulation and tissue swelling extending into healthy brain tissue (peritumoural edema).</p>
             </div>
           </div>
         </div>

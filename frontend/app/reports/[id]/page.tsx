@@ -11,7 +11,7 @@ export default function ReportEditorPage() {
 
   const [status, setStatus] = useState<"draft" | "reviewed" | "signed">("draft");
   const [impression, setImpression] = useState<string>(
-    "Multi-compartment right frontotemporal enhancing intra-axial intra-tumoral mass consistent with high-grade glioma. Significant mass effect with 2.3 mm midline shift. Substantial peritumoural FLAIR edema noted."
+    "Large right frontotemporal enhancing intra-axial brain mass consistent with high-grade glioma (Malignant). Significant mass effect with 2.3 mm midline brain shift. Substantial brain swelling (peritumoural FLAIR edema) noted around the tumour rim. Surgical evaluation advised."
   );
 
   return (
@@ -21,29 +21,29 @@ export default function ReportEditorPage() {
         <div className="flex items-center gap-3">
           <Link
             href={`/studies/${reportId}`}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+            className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-cyan-400" />
-              Structured Radiology Report
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-purple-600" />
+              Clinical Radiology Report
             </h1>
-            <p className="text-xs text-slate-400">
-              Study UUID: {reportId.slice(0, 8)} • Patient: PT-{reportId.slice(0, 6).toUpperCase()}
+            <p className="text-xs text-slate-500">
+              Study ID: {reportId.slice(0, 8)} • Patient: PT-{reportId.slice(0, 6).toUpperCase()}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+            className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
               status === "signed"
-                ? "bg-emerald-950 border border-emerald-700 text-emerald-300"
+                ? "bg-emerald-100 border-emerald-300 text-emerald-800"
                 : status === "reviewed"
-                ? "bg-cyan-950 border border-cyan-700 text-cyan-300"
-                : "bg-slate-800 border border-slate-700 text-slate-400"
+                ? "bg-purple-100 border-purple-300 text-purple-800"
+                : "bg-slate-100 border-slate-200 text-slate-600"
             }`}
           >
             Status: {status}
@@ -51,16 +51,16 @@ export default function ReportEditorPage() {
           <button
             type="button"
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-medium shadow-xs"
           >
-            <Printer className="w-3.5 h-3.5 text-cyan-400" />
+            <Printer className="w-3.5 h-3.5 text-slate-600" />
             <span>Print</span>
           </button>
           <a
             href={`http://localhost:8000/api/v1/reports/${reportId}/pdf`}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export PDF</span>
@@ -68,77 +68,92 @@ export default function ReportEditorPage() {
         </div>
       </div>
 
-      {/* Structured Document Canvas */}
-      <div className="rounded-2xl border border-slate-800 bg-clinical-surface p-8 space-y-6 text-xs text-slate-300 shadow-2xl">
+      {/* Structured Document Canvas (White Paper Style) */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 space-y-6 text-xs text-slate-700 shadow-sm">
         {/* Document Header */}
-        <div className="border-b border-slate-800 pb-4 flex justify-between items-start">
+        <div className="border-b border-slate-200 pb-4 flex justify-between items-start">
           <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
               NEUROLENS CLINICAL DECISION-SUPPORT REPORT
             </h2>
-            <p className="text-[11px] text-slate-400">
-              Department of Neuroradiology • Advanced 3D Quantitative Analysis
+            <p className="text-[11px] text-slate-500">
+              Department of Neuroradiology • 3D Quantitative MRI Analysis
             </p>
           </div>
-          <div className="text-right text-[11px] font-mono text-slate-400">
+          <div className="text-right text-[11px] font-mono text-slate-500">
             <div>Date: 2026-09-21</div>
             <div>Ref: NL-{reportId.slice(0, 8).toUpperCase()}</div>
           </div>
         </div>
 
-        {/* Mandatory Disclaimer Callout */}
-        <div className="p-3 rounded-lg border border-amber-900/60 bg-amber-950/20 text-[11px] text-amber-300 font-medium">
-          <strong>Mandatory Disclaimer:</strong> NeuroLens is a research prototype for decision support only. It is not a medical device and must not be used for clinical diagnosis or treatment decisions.
+        {/* Disclaimer Callout */}
+        <div className="p-3 rounded-lg border border-amber-200 bg-amber-50 text-[11px] text-amber-800 font-medium">
+          <strong>Mandatory Notice:</strong> NeuroLens is a research prototype for decision support only. It is not a medical device and must not replace clinical judgement or diagnosis by a qualified doctor.
         </div>
 
-        {/* Section: Technique */}
-        <div className="space-y-1">
-          <h3 className="font-bold text-slate-100 uppercase text-[11px] tracking-wider text-cyan-400">
-            1. Imaging Technique & Protocol
-          </h3>
-          <p className="leading-relaxed text-slate-300">
-            Multi-sequence volumetric brain MRI acquired including pre-contrast T1, post-contrast T1ce, T2 axial, and FLAIR. Skull-stripping, N4 bias field correction, and 1.0 mm isotropic spatial resampling performed.
+        {/* Section 1: Classification & Malignancy */}
+        <div className="p-4 rounded-xl border border-red-200 bg-red-50/60 space-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider text-red-800">
+              1. AI Classification & Tumour Nature
+            </h3>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 border border-red-300 text-red-800">
+              MALIGNANT (CANCEROUS)
+            </span>
+          </div>
+          <p className="text-xs text-slate-700 leading-relaxed">
+            Consensus Prediction: <strong>Glioma</strong> (Confidence: 86%). Visual AI and Texture AI models both agree on high-grade glial tumour with active vascular enhancement and core necrosis.
           </p>
         </div>
 
-        {/* Section: Quantitative Findings */}
+        {/* Section 2: Imaging Technique */}
+        <div className="space-y-1">
+          <h3 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider text-purple-700">
+            2. Imaging Technique & Protocol
+          </h3>
+          <p className="leading-relaxed text-slate-600">
+            Standard 4-sequence volumetric brain MRI acquired: T1 pre-contrast, T1ce post-gadolinium contrast, T2 axial, and FLAIR. Automated brain isolation and 1.0 mm spatial alignment completed successfully.
+          </p>
+        </div>
+
+        {/* Section 3: Quantitative Findings */}
         <div className="space-y-2">
-          <h3 className="font-bold text-slate-100 uppercase text-[11px] tracking-wider text-cyan-400">
-            2. Quantitative AI Volumetric Findings
+          <h3 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider text-purple-700">
+            3. Automated Tumour Size & Volume Findings
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-center">
-            <div className="p-2.5 rounded bg-slate-900/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-sans">Whole Tumour (WT)</span>
-              <span className="text-sm font-bold text-purple-400">46.8 mL</span>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="text-[10px] text-slate-500 block font-sans">Whole Tumour (WT)</span>
+              <span className="text-base font-bold text-purple-700">46.8 mL</span>
             </div>
-            <div className="p-2.5 rounded bg-slate-900/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-sans">Tumour Core (TC)</span>
-              <span className="text-sm font-bold text-orange-400">25.3 mL</span>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="text-[10px] text-slate-500 block font-sans">Tumour Core (TC)</span>
+              <span className="text-base font-bold text-orange-600">25.3 mL</span>
             </div>
-            <div className="p-2.5 rounded bg-slate-900/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-sans">Enhancing (ET)</span>
-              <span className="text-sm font-bold text-cyan-400">16.1 mL</span>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="text-[10px] text-slate-500 block font-sans">Active Rim (ET)</span>
+              <span className="text-base font-bold text-blue-600">16.1 mL</span>
             </div>
-            <div className="p-2.5 rounded bg-slate-900/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-sans">Midline Shift</span>
-              <span className="text-sm font-bold text-amber-400">2.3 mm</span>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="text-[10px] text-slate-500 block font-sans">Brain Shift</span>
+              <span className="text-base font-bold text-red-600">2.3 mm</span>
             </div>
           </div>
-          <div className="text-[11px] text-slate-400 space-y-0.5 pt-1">
-            <p>• Max Axial RANO Diameter: 39.4 mm (Perpendicular: 32.1 mm, Bidimensional product: 12.6 cm²)</p>
-            <p>• Lesion Count (DBSCAN ε=2.5mm): 1 Solitary focal lesion in right frontotemporal lobes.</p>
-            <p>• Dual-head Consensus: Glioma (CNN: 89%, Classical SVM: 83%, Calibrated Ensemble: 86%).</p>
+          <div className="text-[11px] text-slate-600 space-y-0.5 pt-1">
+            <p>• Maximum Tumour Diameter: 39.4 mm (Cross-width: 32.1 mm)</p>
+            <p>• Tumour Spot Count: 1 primary concentrated mass in right frontotemporal lobes.</p>
+            <p>• Brain Shift Note: 2.3 mm midline displacement indicates significant pressure on the surrounding brain tissue.</p>
           </div>
         </div>
 
-        {/* Section: Impression (Editable Free-Text) */}
+        {/* Section 4: Impression (Editable Free-Text) */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-100 uppercase text-[11px] tracking-wider text-cyan-400">
-              3. Radiologist Impression (Editable)
+            <h3 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider text-purple-700">
+              4. Radiologist Clinical Impression (Editable)
             </h3>
             {status !== "signed" && (
-              <span className="text-[10px] text-slate-500 italic">Editable before sign-off</span>
+              <span className="text-[10px] text-slate-500 italic">Editable before digital sign-off</span>
             )}
           </div>
           <textarea
@@ -146,20 +161,20 @@ export default function ReportEditorPage() {
             disabled={status === "signed"}
             value={impression}
             onChange={(e) => setImpression(e.target.value)}
-            className="w-full p-3 bg-slate-900/90 border border-slate-800 rounded-lg text-slate-100 leading-relaxed text-xs focus:outline-none focus:border-cyan-500 disabled:opacity-75 font-sans"
+            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 leading-relaxed text-xs focus:outline-none focus:border-purple-600 disabled:opacity-75 font-sans"
           />
         </div>
 
         {/* Sign-off Actions */}
-        <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+        <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
           <div className="text-[11px] text-slate-500">
             {status === "signed" ? (
-              <span className="text-emerald-400 font-medium flex items-center gap-1">
-                <CheckCircle className="w-3.5 h-3.5" />
-                Digitally signed and archived. Immutability locked.
+              <span className="text-emerald-700 font-bold flex items-center gap-1">
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                Digitally signed and finalized by radiologist.
               </span>
             ) : (
-              <span>Draft document under clinical review</span>
+              <span>Draft document pending doctor signature</span>
             )}
           </div>
 
@@ -168,7 +183,7 @@ export default function ReportEditorPage() {
               <button
                 type="button"
                 onClick={() => setStatus("reviewed")}
-                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition"
+                className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-medium text-xs transition"
               >
                 Mark as Reviewed
               </button>
@@ -177,7 +192,7 @@ export default function ReportEditorPage() {
               <button
                 type="button"
                 onClick={() => setStatus("signed")}
-                className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-lg shadow-emerald-600/20"
+                className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-sm"
               >
                 Sign Off Report
               </button>

@@ -6,13 +6,9 @@ import Link from "next/link";
 import {
   FileText,
   GitCompare,
-  CheckCircle2,
-  Clock,
   BarChart3,
-  Layers,
-  Sparkles,
+  BookOpen,
   Info,
-  ShieldAlert,
 } from "lucide-react";
 
 import { ViewerCanvas } from "@/components/ViewerCanvas";
@@ -36,7 +32,6 @@ export default function StudyWorkspacePage() {
   // State
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Viewer State
   const [currentSequence, setCurrentSequence] = useState<string>("t1ce");
@@ -54,7 +49,7 @@ export default function StudyWorkspacePage() {
   const [showGradCam, setShowGradCam] = useState<boolean>(false);
 
   // Right Panel Tabs
-  const [activeTab, setActiveTab] = useState<"summary" | "measurements" | "explain" | "similar" | "history">("summary");
+  const [activeTab, setActiveTab] = useState<"summary" | "measurements" | "explain" | "similar">("summary");
 
   // Load Analysis Data
   useEffect(() => {
@@ -64,7 +59,7 @@ export default function StudyWorkspacePage() {
         const data = await fetchStudyAnalysis(studyId);
         setAnalysis(data);
       } catch (err: any) {
-        // Fallback to high-fidelity mock data for standalone UI preview
+        // High-fidelity fallback for standalone UI demonstration
         setAnalysis({
           study_id: studyId,
           model_versions: {
@@ -100,16 +95,16 @@ export default function StudyWorkspacePage() {
           uncertainty: { case_score: 0.17, needs_review: false, reasons: [] },
           habitats: { method: "gmm", k: 3, map_url: null },
           radiomics_top_features: [
-            { name: "original_glcm_Contrast", value: 14.8, importance: 0.34 },
-            { name: "original_firstorder_Entropy", value: 5.2, importance: 0.29 },
-            { name: "original_shape_Elongation", value: 0.72, importance: 0.21 },
+            { name: "Contrast (Intensity Variation)", value: 14.8, importance: 0.34 },
+            { name: "Entropy (Tissue Irregularity)", value: 5.2, importance: 0.29 },
+            { name: "Elongation (Non-Spherical Shape)", value: 0.72, importance: 0.21 },
           ],
           similar_cases: [
             { case_id: "BRATS21-00219", label: "glioma", similarity: 0.95 },
             { case_id: "BRATS21-00441", label: "glioma", similarity: 0.91 },
             { case_id: "BRATS21-00108", label: "glioma", similarity: 0.87 },
           ],
-          urgency: { score: 0.64, rules_fired: ["Midline shift > 2.0mm", "Large WT volume (>30mL)"] },
+          urgency: { score: 0.64, rules_fired: ["Midline shift > 2.0 mm (Brain pressure)", "Large tumour volume (>30 mL)"] },
           experimental: { idh_prediction: null, survival_bin: null },
         });
       } finally {
@@ -128,8 +123,8 @@ export default function StudyWorkspacePage() {
     return (
       <div className="flex-1 flex items-center justify-center p-8 space-y-4 text-center">
         <div className="space-y-3">
-          <div className="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-slate-400 font-mono">Loading Study & Quantitative Results...</p>
+          <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-600 font-medium">Loading Brain Scan Analysis...</p>
         </div>
       </div>
     );
@@ -138,33 +133,40 @@ export default function StudyWorkspacePage() {
   if (!analysis) return null;
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100vh-3.5rem-2.5rem)] overflow-hidden bg-clinical-bg">
+    <div className="flex-1 flex flex-col h-[calc(100vh-3.5rem-2.5rem)] overflow-hidden bg-slate-50">
       {/* Top Context Bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-clinical-surface border-b border-slate-800 text-xs">
+      <div className="flex items-center justify-between px-6 py-2.5 bg-white border-b border-slate-200 text-xs shadow-xs">
         <div className="flex items-center gap-3">
-          <span className="font-bold text-slate-100 font-mono">Study: {studyId.slice(0, 8)}</span>
-          <span className="text-slate-500">•</span>
-          <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 font-medium">
+          <span className="font-bold text-slate-900 font-mono">Scan: {studyId.slice(0, 8)}</span>
+          <span className="text-slate-300">•</span>
+          <span className="px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 font-semibold">
             Protocol: 4-Sequence MRI
           </span>
-          <span className="text-slate-500">•</span>
-          <span className="text-slate-400">Patient: PT-{studyId.slice(0, 6).toUpperCase()}</span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-600 font-medium">Patient: PT-{studyId.slice(0, 6).toUpperCase()}</span>
         </div>
 
         <div className="flex items-center gap-2">
           <Link
-            href={`/reports/${studyId}`}
-            className="flex items-center gap-1.5 px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition"
+            href="/info"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium transition"
           >
-            <FileText className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Generate Report</span>
+            <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+            <span>Guide to Terms</span>
           </Link>
           <Link
             href={`/studies/${studyId}/compare`}
-            className="flex items-center gap-1.5 px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium transition"
           >
-            <GitCompare className="w-3.5 h-3.5 text-purple-400" />
-            <span>Longitudinal Compare</span>
+            <GitCompare className="w-3.5 h-3.5 text-purple-600" />
+            <span>Compare with Past Scans</span>
+          </Link>
+          <Link
+            href={`/reports/${studyId}`}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition shadow-sm"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Create Clinical Report</span>
           </Link>
         </div>
       </div>
@@ -172,7 +174,7 @@ export default function StudyWorkspacePage() {
       {/* Main Workspace Split: Viewer (Left) + Analysis Panels (Right) */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Column: Viewer & Controls */}
-        <div className="flex-[3] flex flex-col p-3 gap-2 border-r border-slate-800 overflow-hidden">
+        <div className="flex-[3] flex flex-col p-3 gap-2 border-r border-slate-200 overflow-hidden bg-slate-100/60">
           {/* Viewer Top Controls */}
           <div className="flex items-center justify-between gap-2">
             <SequenceTabs
@@ -181,8 +183,8 @@ export default function StudyWorkspacePage() {
               availableSequences={["t1", "t1ce", "t2", "flair"]}
             />
             <MaskEditorToolbar
-              onSaveMaskVersion={() => alert("Mask revision saved as Doctor Mask v2!")}
-              onRevertAI={() => alert("Restored baseline AI segmentation mask.")}
+              onSaveMaskVersion={() => alert("Doctor corrections saved as Mask v2!")}
+              onRevertAI={() => alert("Restored original AI segmentation.")}
             />
           </div>
 
@@ -222,57 +224,57 @@ export default function StudyWorkspacePage() {
         </div>
 
         {/* Right Column: Analysis Panels with Tabs */}
-        <div className="flex-[2] flex flex-col bg-clinical-surface overflow-hidden">
+        <div className="flex-[2] flex flex-col bg-white overflow-hidden border-l border-slate-200">
           {/* Tabs Navigation */}
-          <div className="flex border-b border-slate-800 bg-clinical-bg/50 px-2 pt-2 text-xs">
+          <div className="flex border-b border-slate-200 bg-slate-50 px-3 pt-2 text-xs">
             <button
               type="button"
               onClick={() => setActiveTab("summary")}
-              className={`px-3 py-2 font-medium border-b-2 transition ${
+              className={`px-4 py-2 font-bold border-b-2 transition ${
                 activeTab === "summary"
-                  ? "border-cyan-400 text-cyan-300 bg-clinical-surface"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "border-purple-600 text-purple-700 bg-white"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
               }`}
             >
-              Summary
+              Summary & Diagnosis
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("measurements")}
-              className={`px-3 py-2 font-medium border-b-2 transition ${
+              className={`px-4 py-2 font-bold border-b-2 transition ${
                 activeTab === "measurements"
-                  ? "border-cyan-400 text-cyan-300 bg-clinical-surface"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "border-purple-600 text-purple-700 bg-white"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
               }`}
             >
-              Measurements
+              Size & Measurements
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("explain")}
-              className={`px-3 py-2 font-medium border-b-2 transition ${
+              className={`px-4 py-2 font-bold border-b-2 transition ${
                 activeTab === "explain"
-                  ? "border-cyan-400 text-cyan-300 bg-clinical-surface"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "border-purple-600 text-purple-700 bg-white"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
               }`}
             >
-              Explainability
+              AI Explanation
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("similar")}
-              className={`px-3 py-2 font-medium border-b-2 transition ${
+              className={`px-4 py-2 font-bold border-b-2 transition ${
                 activeTab === "similar"
-                  ? "border-cyan-400 text-cyan-300 bg-clinical-surface"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "border-purple-600 text-purple-700 bg-white"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
               }`}
             >
-              Similar Cases
+              Similar Past Cases
             </button>
           </div>
 
           {/* Tab Content Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
             {activeTab === "summary" && (
               <>
                 <NeedsReviewBanner uncertainty={analysis.uncertainty} />
@@ -299,24 +301,27 @@ export default function StudyWorkspacePage() {
 
             {activeTab === "explain" && (
               <div className="space-y-4 text-xs">
-                {/* Top Radiomic Features Chart */}
-                <div className="p-4 rounded-xl border border-slate-800 bg-clinical-surface space-y-3">
-                  <h4 className="font-semibold text-sm text-slate-100 flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-purple-400" />
-                    Top Driving Radiomic Features (Random Forest)
+                {/* Top Features */}
+                <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-3 shadow-sm">
+                  <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-purple-600" />
+                    Key MRI Features Influencing AI Diagnosis
                   </h4>
-                  <div className="space-y-2 pt-1">
+                  <p className="text-slate-500 text-[11px]">
+                    The mathematical texture and boundary measurements that most heavily guided the AI’s tumour classification:
+                  </p>
+                  <div className="space-y-2.5 pt-1">
                     {analysis.radiomics_top_features.map((feat) => (
                       <div key={feat.name} className="space-y-1">
                         <div className="flex justify-between text-[11px]">
-                          <span className="font-mono text-slate-300">{feat.name}</span>
-                          <span className="font-mono text-purple-300">
-                            {(feat.importance * 100).toFixed(1)}% importance
+                          <span className="font-semibold text-slate-800">{feat.name}</span>
+                          <span className="font-mono text-purple-700 font-bold">
+                            {(feat.importance * 100).toFixed(0)}% importance
                           </span>
                         </div>
-                        <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400"
+                            className="h-full rounded-full bg-purple-600"
                             style={{ width: `${feat.importance * 100}%` }}
                           />
                         </div>
@@ -325,19 +330,18 @@ export default function StudyWorkspacePage() {
                   </div>
                 </div>
 
-                {/* Triage Rules Fired */}
-                <div className="p-4 rounded-xl border border-slate-800 bg-clinical-surface space-y-2">
-                  <h4 className="font-semibold text-sm text-slate-100 flex items-center gap-2">
-                    <Info className="w-4 h-4 text-cyan-400" />
-                    Decision Tree Urgency Logic
+                {/* Priority Rules Fired */}
+                <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-2 shadow-sm">
+                  <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                    <Info className="w-4 h-4 text-purple-600" />
+                    Why Is This Scan High Priority?
                   </h4>
-                  <p className="text-slate-400 text-[11px]">
-                    Heuristic rule engine explaining why this study received urgency score{" "}
-                    <strong className="text-amber-400 font-mono">{analysis.urgency.score.toFixed(2)}</strong>:
+                  <p className="text-slate-500 text-[11px]">
+                    Clinical safety checks triggered for this case (Urgency Score: <strong className="text-purple-700 font-mono">{analysis.urgency.score.toFixed(2)}</strong>):
                   </p>
-                  <ul className="list-disc list-inside space-y-1 text-slate-300 text-[11px] pl-1">
+                  <ul className="list-disc list-inside space-y-1 text-slate-700 text-xs pl-1">
                     {analysis.urgency.rules_fired.map((rule, idx) => (
-                      <li key={idx}>{rule}</li>
+                      <li key={idx} className="font-medium">{rule}</li>
                     ))}
                   </ul>
                 </div>
