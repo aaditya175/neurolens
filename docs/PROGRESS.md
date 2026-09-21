@@ -16,11 +16,13 @@
   - [x] Next.js frontend shell with dark clinical theme, disclaimer, and layout
   - [x] Automated Phase 0 tests passing
 
-- [ ] **Phase 1 — Backend core + upload + fake pipeline**
-  - [ ] Auth & RBAC (JWT, doctor/admin roles)
-  - [ ] Patient & Study CRUD with DICOM de-identification
-  - [ ] Celery job worker with progress stages
-  - [ ] `FAKE_MODEL=true` end-to-end integration
+- [x] **Phase 1 — Backend core + upload + fake pipeline**
+  - [x] Auth & RBAC (JWT access/refresh tokens, doctor & admin roles)
+  - [x] Pseudonymised Patient & Study management with safe UUID storage
+  - [x] Automated sequence detection (`t1`, `t1ce`, `t2`, `flair`) and DICOM tag stripping
+  - [x] Celery worker configuration & async job runner with multi-stage progress tracking (`qc` -> `segment` -> `measure` -> `classify` -> `retrieve`)
+  - [x] `FAKE_MODEL=true` pipeline returning 100% compliant Section 7.1 AnalysisResult JSON
+  - [x] End-to-end upload and analysis verification test suite green
 
 - [ ] **Phase 2 — Viewer + workspace UI (with fake results)**
   - [ ] Multi-Planar Reconstruction (MPR) viewer

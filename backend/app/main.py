@@ -4,10 +4,22 @@ Mandatory Disclaimer:
 "NeuroLens is a research prototype for decision support only. It is not a medical device and must not be used for clinical diagnosis or treatment decisions."
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
 from backend.app.core.config import settings
+from backend.app.core.database import init_db
+from backend.app.api.v1 import api_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize database tables on startup
+    await init_db()
+    yield
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -20,6 +32,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url=f"{settings.API_V1_STR}/docs",
     redoc_url=f"{settings.API_V1_STR}/redoc",
+    lifespan=lifespan,
 )
 
 # CORS Middleware
@@ -37,6 +50,10 @@ async def add_disclaimer_header(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Clinical-Disclaimer"] = settings.DISCLAIMER
     return response
+
+
+# Mount API v1 Routers
+app.include_router(api_router)
 
 
 @app.get("/health", tags=["System"])
