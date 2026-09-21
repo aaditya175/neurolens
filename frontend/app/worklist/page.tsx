@@ -21,6 +21,7 @@ import {
   createPatientFromInput,
   registerCustomPatient,
 } from "@/lib/patientCatalog";
+import { API_BASE } from "@/lib/api";
 
 export default function WorklistPage() {
   const [studies, setStudies] = useState<WorklistItem[]>([]);
@@ -76,7 +77,7 @@ export default function WorklistPage() {
 
     // Sync to backend API / MongoDB
     try {
-      fetch("http://localhost:8000/api/v1/patients", {
+      fetch(`${API_BASE}/patients`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

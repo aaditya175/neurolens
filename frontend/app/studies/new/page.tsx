@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileUp, ShieldCheck, ArrowRight, FolderCheck, Sparkles, CheckCircle2 } from "lucide-react";
 import { createPatientFromInput, registerCustomPatient } from "@/lib/patientCatalog";
+import { API_BASE } from "@/lib/api";
 
 export default function UploadStudyPage() {
   const router = useRouter();
@@ -99,7 +100,7 @@ export default function UploadStudyPage() {
 
     // Sync to backend API / MongoDB
     try {
-      await fetch("http://localhost:8000/api/v1/patients", {
+      await fetch(`${API_BASE}/patients`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: patientCode.trim(), age: patientAge, sex: patientSex }),

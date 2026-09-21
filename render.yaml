@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: neurolens-backend
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && pip install -e ml"
+    startCommand: "uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FAKE_MODEL
+        value: "true"
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: MONGODB_ENABLED
+        value: "true"
+      - key: MONGODB_URL
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: neurolens_db
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: "sqlite+aiosqlite:///./neurolens.db"
+      - key: BACKEND_CORS_ORIGINS
+        value: '["http://localhost:3000","https://neurolens.netlify.app"]'

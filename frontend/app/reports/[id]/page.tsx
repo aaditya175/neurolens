@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { FileText, Download, CheckCircle, ArrowLeft, Printer, ShieldCheck } from "lucide-react";
 import { getPatientProfile, PatientProfile } from "@/lib/patientCatalog";
+import { API_BASE } from "@/lib/api";
 
 export default function ReportEditorPage() {
   const params = useParams();
@@ -68,7 +69,7 @@ export default function ReportEditorPage() {
             <span>Print</span>
           </button>
           <a
-            href={`http://localhost:8000/api/v1/reports/${reportId}/pdf`}
+            href={`${API_BASE}/reports/${reportId}/pdf`}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition"
