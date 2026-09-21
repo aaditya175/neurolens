@@ -12,9 +12,9 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
-lib/
-lib64/
+/lib/
+/lib64/
+!frontend/lib/
 parts/
 sdist/
 var/
@@ -24,8 +24,10 @@ wheels/
 *.egg
 
 # Data and Weights - NEVER COMMIT DATA OR WEIGHTS
-ml/data/
-data/
+/ml/data/
+/data/
+/backend/data/
+!ml/src/neurolens_ml/data/
 *.nii
 *.nii.gz
 *.dcm
