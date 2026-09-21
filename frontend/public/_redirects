@@ -1,1 +1,3 @@
-/*    /index.html   200
+/api/*    https://neurolens-dahk.onrender.com/api/:splat    200!
+/health   https://neurolens-dahk.onrender.com/health        200!
+/*        /index.html                                       200

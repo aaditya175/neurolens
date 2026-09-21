@@ -26,6 +26,8 @@ try:
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:8000",
+            "https://neurolenss.netlify.app",
+            "https://neurolens.netlify.app",
         ]
         
         # Database & Redis
@@ -77,6 +79,8 @@ except ImportError:
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:8000",
+            "https://neurolenss.netlify.app",
+            "https://neurolens.netlify.app",
         ]
         
         DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./neurolens.db")
